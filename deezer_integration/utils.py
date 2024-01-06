@@ -6,6 +6,13 @@ from pathvalidate import sanitize_filename
 logger = logging.getLogger(__name__)
 
 
+def get_extension(quality: int) -> str:
+    if quality <= 1:
+        return ".mp3"
+    else:
+        return ".flac"
+
+
 def clean_filename(fn: str, restrict=False) -> str:
     path = sanitize_filename(fn)
     if restrict:

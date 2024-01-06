@@ -11,9 +11,7 @@ async def websocket_endpoint(websocket: WebSocket):
     await connection_manager.connect(websocket)
     try:
         while True:
-            await connection_manager.receive_text()
+            await connection_manager.receive(websocket)
 
-    except Exception:
-        pass
     finally:
         await connection_manager.disconnect(websocket)

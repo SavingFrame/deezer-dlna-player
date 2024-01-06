@@ -37,7 +37,6 @@ class RabbitMQService:
 
             # Start consuming messages
             async for message in queue:
-                print('message receive', message)
                 await self.connection_manager.broadcast(message.body.decode())
                 await message.ack()  # Acknowledge the message
 

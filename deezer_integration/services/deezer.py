@@ -5,41 +5,50 @@ import httpx
 from fastapi import HTTPException
 
 from config import settings
+from deezer_integration.services.async_deezer_client import AsyncDeezer
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level="INFO")
 
 
 class DeezerIntegration:
+    API_URL = 'https://api.deezer.com/'
+
     def __init__(self):
-        self.client = deezer.Deezer()
-        self.login()
+        # self.client = deezer.Deezer()
+        # self.login()
+        self.async_client = AsyncDeezer()
 
     def login(self):
-        success = self.client.login_via_arl(settings.DEEZER_ARL)
+        success = self.async_client.login_via_arl(settings.DEEZER_ARL)
         if not success:
             raise HTTPException(status_code=401, detail="Unauthorized: No access token available")
 
     async def get_playlists(self, limit: None | int = None):
+        await self.async_client.login_via_arl(settings.DEEZER_ARL)
         limit = limit or 25
-        return self.client.api.get_user_playlists(
-            user_id=self.client.current_user.get('id'),
+        response = await self.async_client.api.get_user_playlists(
+            user_id=self.async_client.current_user.get('id'),
             limit=limit
-        ).get('data')
+        )
+        return response.get('data')
 
     async def get_artists(self, limit: None | int = None):
+        await self.async_client.login_via_arl(settings.DEEZER_ARL)
         limit = limit or 25
-        return self.client.api.get_user_artists(
-            user_id=self.client.current_user.get('id'),
+        response = await self.async_client.api.get_user_artists(
+            user_id=self.async_client.current_user.get('id'),
             limit=limit
-        ).get('data')
+        )
+        return response.get('data')
 
     async def get_favorite_tracks(self, limit: None | int = None):
+        await self.async_client.login_via_arl(settings.DEEZER_ARL)
         limit = limit or 25
-        return self.client.api.get_user_tracks(
-            user_id=self.client.current_user.get('id'),
+        response = await self.async_client.api.get_user_tracks(
+            user_id=self.async_client.current_user.get('id'),
             limit=limit
-        ).get('data')
+        )
+        return response.get('data')
 
     async def search_tracks(self, query: str):
         """
@@ -56,6 +65,3 @@ class DeezerIntegration:
                 raise HTTPException(status_code=500, detail="Failed to perform search_tracks")
 
             return response.json()
-
-
-

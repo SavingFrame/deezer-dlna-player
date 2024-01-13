@@ -4,10 +4,9 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import {useGetPlaylistsQuery} from "../services/playlistService";
 import {useGetArtistsQuery} from "../services/artistService";
 import {useGetFavouriteTracksQuery,} from "../services/tracksService";
-import playerWebsocket from "../services/playerWebsocket";
 import {useWebSocketContext} from "../providers/WebSocketProvider";
+import {WebSocketValues} from "../services/playerWebsocket";
 
-// import playerWebsocket from "../services/playerWebsocket";
 
 
 interface ItemProps {
@@ -18,11 +17,11 @@ interface ItemProps {
 }
 
 const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id}) => {
-    const {playTrack} = useWebSocketContext();
+    const {actionPlayTrack}: WebSocketValues = useWebSocketContext();
 
     const handlePlayTrack = (trackId: number) => {
         console.log('11')
-        playTrack(trackId);
+        actionPlayTrack(trackId);
     };
     return (
         <Card style={{margin: 8, width: 250, height: 250, position: 'relative'}}>

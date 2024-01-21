@@ -12,11 +12,18 @@ class WebsocketReceiver:
 
     async def process_set_device(self, message: dict, websocket: WebSocket):
         from dlna.services.dlna_discovery import upnp_devices_discovery
+        from dlna.services.dlna_device import DlnaDevice
         device_udh = message.get('device_udh')
+        upnp_device = upnp_devices_discovery.devices[device_udh]
+        if getattr(upnp_device, 'subscribers', None):
+            upnp_device.subscribers.add(websocket)
+        else:
+            upnp_device.subscribers = {websocket}
         websocket.device = {
             'device_udh': device_udh,
-            'device_url': upnp_devices_discovery.devices[device_udh].device_url,
+            'device_url': upnp_device.device_url,
         }
+        await DlnaDevice(upnp_device, subscribe=False).notify_specific_subscribers([websocket.uuid])
 
     async def send_to_worker(self, message: dict):
         message.update({'device': self.websocket.device})

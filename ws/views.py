@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from starlette.websockets import WebSocket
 
-from dlna.services.ws_manager import connection_manager
+from ws.ws_manager import connection_manager
 
 router = APIRouter()
 

@@ -14,8 +14,6 @@ class DeezerIntegration:
     API_URL = 'https://api.deezer.com/'
 
     def __init__(self):
-        # self.client = deezer.Deezer()
-        # self.login()
         self.async_client = AsyncDeezer()
 
     def login(self):
@@ -36,6 +34,15 @@ class DeezerIntegration:
         await self.async_client.login_via_arl(settings.DEEZER_ARL)
         limit = limit or 25
         response = await self.async_client.api.get_user_artists(
+            user_id=self.async_client.current_user.get('id'),
+            limit=limit
+        )
+        return response.get('data')
+
+    async def get_albums(self, limit: None | int = None):
+        await self.async_client.login_via_arl(settings.DEEZER_ARL)
+        limit = limit or 25
+        response = await self.async_client.api.get_user_albums(
             user_id=self.async_client.current_user.get('id'),
             limit=limit
         )

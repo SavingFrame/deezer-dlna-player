@@ -9,6 +9,8 @@ from dlna.services.dlna_device import DlnaDevice
 
 logger = logging.getLogger('task_worker')
 
+cache = {}
+
 
 def get_dlna_device(func: Callable):
     @wraps(func)
@@ -20,8 +22,13 @@ def get_dlna_device(func: Callable):
             raise ValueError("Device_udh not found in message.")
         requester = AiohttpRequester()
         factory = UpnpFactory(requester)
+        device_udh = device.get('device_udh')
+        existing_device = cache.get(device_udh)
+        if existing_device:
+            return await func(existing_device, *args, **kwargs)
         upnp_device = await factory.async_create_device(device.get("device_url"))
         dlna_device = DlnaDevice(upnp_device, subscribe=False)
+        cache[device_udh] = dlna_device
         return await func(dlna_device, *args, **kwargs)
-    return wrapped
 
+    return wrapped

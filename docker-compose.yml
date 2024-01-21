@@ -5,17 +5,25 @@ services:
     container_name: 'rabbitmq'
     hostname: "0.0.0.0"
     ports:
-      - 5672:5672
-      - 4369:4369
-      - 15672:15672
+      - 5674:5672
+      - 4373:4369
+      - 15674:15672
     tty: true
     stdin_open: true
+
+  redis:
+    image: redis:latest
+    container_name: 'redis'
+    hostname: "redis"
+    ports:
+      - 6379:6379
 
   nginx:
     image: nginx:latest
     container_name: 'nginx'
     volumes:
       - ./docker/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/mime.types:/etc/nginx/mime.types
       - ./media:/data
     ports:
       - 80:80

@@ -5,16 +5,19 @@ from deezer import Deezer, GW, API
 from deezer.errors import (
     GWAPIError, ItemsLimitExceededException, PermissionException, InvalidTokenException,
     WrongParameterException, InvalidQueryException, DataException, IndividualAccountChangedNotAllowedException,
-    APIError, MissingParameterException,
+    APIError, MissingParameterException, DeezerError, WrongLicense, WrongGeolocation,
 )
 from deezer.gw import EMPTY_TRACK_OBJ
 from deezer.utils import map_user_track
-from httpx import AsyncClient, Cookies, ConnectError, TimeoutException
+from httpx import AsyncClient, Cookies, ConnectError, TimeoutException, HTTPError
 
 
 class AsyncDeezerGW(GW):
 
-    async def api_call(self, method, args=None, params=None):
+    async def get_track(self, sng_id):
+        return await self.api_call('song.getData', {'SNG_ID': sng_id})
+
+    async def api_call(self, method, args=None, params=None) -> dict | list:
         if args is None: args = {}
         if params is None: params = {}
         if not self.api_token and method != 'deezer.getUserData': self.api_token = self._get_token()
@@ -159,6 +162,12 @@ class AsyncDeezerAPI(API):
     async def get_user_tracks(self, user_id, index=0, limit=25):
         return await self.api_call(f'user/{str(user_id)}/tracks', {'index': index, 'limit': limit})
 
+    async def get_user_albums(self, user_id, index=0, limit=25):
+        return await self.api_call(f'user/{str(user_id)}/albums', {'index': index, 'limit': limit})
+
+    async def get_album(self, album_id):
+        return await self.api_call(f'album/{str(album_id)}')
+
 
 class AsyncDeezer(Deezer):
 
@@ -167,6 +176,59 @@ class AsyncDeezer(Deezer):
         self.session = AsyncClient()
         self.gw = AsyncDeezerGW(self.session, self.http_headers)
         self.api = AsyncDeezerAPI(self.session, self.http_headers)
+
+    async def get_track_url(self, track_token, track_format):
+        tracks = await self.get_tracks_url([track_token, ], track_format)
+        if len(tracks) > 0:
+            if isinstance(tracks[0], DeezerError):
+                raise tracks[0]
+            else:
+                return tracks[0]
+        return None
+
+    async def get_tracks_url(self, track_tokens, track_format):
+        if not isinstance(track_tokens, list):
+            track_tokens = [track_tokens, ]
+        if not self.current_user.get('license_token'):
+            return []
+        if (track_format == "FLAC" or track_format.startswith("MP4_RA")) and not self.current_user.get(
+            'can_stream_lossless'
+        ) or track_format == "MP3_320" and not self.current_user.get('can_stream_hq'):
+            raise WrongLicense(format)
+
+        result = []
+        try:
+            request = await self.session.post(
+                "https://media.deezer.com/v1/get_url",
+                json={
+                    'license_token': self.current_user['license_token'],
+                    'media': [{
+                        'type': "FULL",
+                        'formats': [
+                            {'cipher': "BF_CBC_STRIPE", 'format': track_format}
+                        ]
+                    }],
+                    'track_tokens': track_tokens
+                },
+                headers=self.http_headers
+            )
+            request.raise_for_status()
+            response = request.json()
+        except HTTPError:
+            return []
+
+        if len(response.get('data', [])):
+            for data in response['data']:
+                if 'errors' in data:
+                    if data['errors'][0]['code'] == 2002:
+                        result.append(WrongGeolocation(self.current_user['country']))
+                    else:
+                        result.append(DeezerError(json.dumps(response)))
+                if 'media' in data and len(data['media']):
+                    result.append(data['media'][0]['sources'][0]['url'])
+                else:
+                    result.append(None)
+        return result
 
     async def login_via_arl(self, arl, child=0):
         arl = arl.strip()

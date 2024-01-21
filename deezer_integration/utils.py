@@ -1,7 +1,10 @@
 import logging
+import os
 from string import Formatter
 
-from pathvalidate import sanitize_filename
+from pathvalidate import sanitize_filename, sanitize_filepath
+
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -53,3 +56,28 @@ def clean_format(formatter: str, format_info, restrict: bool = False):
             clean_dict[key] = "Unknown"
 
     return formatter.format(**clean_dict)
+
+
+def get_track_filepath(
+    artist_name: str,
+    album_name: str,
+    track_name: str,
+    quality: int = 2
+) -> str:
+    folder = settings.MEDIA_PATH
+    artist_name = artist_name
+    album_name = album_name
+    track_title = track_name
+    folder_path = os.path.join(
+        folder,
+        artist_name,
+        album_name,
+    )
+    folder_path = sanitize_filepath(folder_path, platform="auto")
+    filename = f"{track_title}" + get_extension(quality)
+    filename = sanitize_filepath(filename, platform="auto")
+
+    os.makedirs(folder_path, exist_ok=True)
+
+    filepath = os.path.join(folder_path, filename)
+    return filepath

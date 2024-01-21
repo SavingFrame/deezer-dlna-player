@@ -4,7 +4,7 @@ from functools import lru_cache, wraps
 from typing import Callable
 
 logger = logging.getLogger('task_worker')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 TASK_REGISTRY = {}
 
@@ -33,15 +33,17 @@ class Task:
         return f"Task: {self.name} | Queue Key: {self.queue_key} | Task func: {self.task_func} "
 
 
-def task(queue_key: str, description: str = None, cache_max_size: bool = 0):
+def task(queue_key: str, description: str = None, skip_logging: bool = False):
     def decorator(func: Callable):
 
         @wraps(func)
         async def wrapper(*args, **kwargs):
             try:
-                logging.info(f"Task {func.__name__} started.")
+                if not skip_logging:
+                    logging.info(f"Task {func.__name__} started.")
                 await func(*args, **kwargs)
-                logging.info(f"Task {func.__name__} finished.")
+                if not skip_logging:
+                    logging.info(f"Task {func.__name__} finished.")
 
             except Exception as e:
                 logging.error(f"Task {func.__name__} failed.")

@@ -4,47 +4,36 @@ import json
 import logging
 from pathlib import Path
 
-from aio_pika import connect_robust, RobustConnection, Message
+import aio_pika
 from aio_pika.abc import AbstractIncomingMessage, DeliveryMode
 
 from config import settings
+from utils.rabbitmq import channel_pool
 from utils.task_worker.task_registry import TASK_REGISTRY
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('task_worker')
 logger.setLevel(logging.INFO)
-# logging.basicConfig(level=logging.INFO)
 
 
 class PlayerTaskWorker:
 
-    def __init__(self, connection: RobustConnection | None = None):
-        self.connection = connection
-        self.channel = None
-        self.queue = None
-        self.devices = dict()
-
-    async def connect(self):
-        self.connection = self.connection or await connect_robust()
-        self.channel = await self.connection.channel()
-        self.queue = await self.channel.declare_queue(
-            "task_queue",
-            durable=True,
-        )
-
     async def run_worker(self):
-        await self.connect()
         await self.import_task_modules()
         await self._log_registered_tasks()
-        async with self.connection:
-            # Creating a channel
-            channel = await self.connection.channel()
+        async with channel_pool.acquire() as channel:
             await channel.set_qos(prefetch_count=1)
 
             # Declaring queue
             queue = await channel.declare_queue(
-                "task_queue",
-                durable=True,
+                durable=False,
             )
+            exchange = await channel.declare_exchange(
+                'task_worker', aio_pika.ExchangeType.DIRECT
+            )
+
+            await queue.bind(exchange, routing_key="task_queue")
+            await queue.bind(exchange, routing_key="upnp_notify")
 
             # Start listening the queue with name 'task_queue'
             await queue.consume(self._on_message)
@@ -55,20 +44,21 @@ class PlayerTaskWorker:
     async def on_message(self, data: dict | list) -> None:
         logger.debug("Received message: %s", data)
         message_type = data.get("type")
-        await self._log_registered_tasks()
         await TASK_REGISTRY[message_type].task_func(data)
 
     async def send_message(self, message: dict | list):
-        if not self.connection:
-            await self.connect()
-        message = json.dumps(message)
-        message = Message(
-            message.encode(), delivery_mode=DeliveryMode.PERSISTENT,
-        )
-        await self.channel.default_exchange.publish(
-            message,
-            routing_key="task_queue",
-        )
+        async with channel_pool.acquire() as channel:
+            exchange = await channel.declare_exchange(
+                'task_worker', aio_pika.ExchangeType.DIRECT
+            )
+            message = json.dumps(message)
+            message = aio_pika.Message(
+                message.encode(), delivery_mode=DeliveryMode.NOT_PERSISTENT,
+            )
+            await exchange.publish(
+                message,
+                routing_key="task_queue",
+            )
 
     @staticmethod
     async def _find_task_modules():
@@ -95,7 +85,13 @@ class PlayerTaskWorker:
         async with message.process():
             data = message.body.decode()
             data_json = json.loads(data)
-            await self.on_message(data_json)
+            if message.routing_key == 'task_queue':
+                await self.on_message(data_json)
+            # elif message.routing_key == 'upnp_notify':
+            #     await self.upnp_notify_on_message(data_json)
+
+    # async def upnp_notify_on_message(self, data: list | dict) -> None:
+    #     logger.info("Received UpnP notify message: %s", data)
 
 
 if __name__ == "__main__":

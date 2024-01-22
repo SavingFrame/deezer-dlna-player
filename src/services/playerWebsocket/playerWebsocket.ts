@@ -1,39 +1,10 @@
 // useWebSocket.ts
 import {useCallback, useEffect, useState} from 'react';
-import {WS_URL} from "../config";
-
-export type DeviceType = {
-    friendly_name: string;
-    manufacturer: string;
-    model_name: string;
-    icon?: string | null;
-    udn: string;
-}
-
-export type PlayerType = {
-    media_title: string;
-    media_album: string;
-    media_artist: string;
-    media_position: number;
-    media_duration: number;
-    media_cover?: string | null;
-    volume_level: number;
-    is_playing: boolean;
-};
-
-export type WebSocketValues = {
-    playerData: PlayerType;
-    deviceData: DeviceType[];
-    isConnected: boolean;
-    sendData: (data: any) => void; // Adjust the type of 'data' if needed
-    actionPlayTrack: (songId: number) => void;
-    actionPause: () => void;
-    actionPlay: () => void;
-    reconnect: () => void;
-};
+import {WS_URL} from "../../config";
+import {DeviceType, PlayerType, WebSocketValues} from "./types";
 
 
-const useWebSocket = () : WebSocketValues => {
+const useWebSocket = (): WebSocketValues => {
     const [webSocket, setWebSocket] = useState<WebSocket | null>(null);
     const [playerData, setPlayerData] = useState<PlayerType>({
         media_title: 'No media playing',
@@ -41,13 +12,12 @@ const useWebSocket = () : WebSocketValues => {
         media_artist: '',
         media_position: 0,
         media_duration: 0,
-        media_cover: null,
+        media_image_url: null,
         volume_level: 0,
         is_playing: false,
     });
     const [deviceData, setDeviceData] = useState<DeviceType[]>([]);
     const [isConnected, setIsConnected] = useState(false);
-
 
 
     // Function to send data through WebSocket
@@ -58,14 +28,23 @@ const useWebSocket = () : WebSocketValues => {
     }, [webSocket]);
 
     const actionPlayTrack = useCallback((songId: number) => {
-        sendData({ type: 'player.play_song', message: songId });
+        sendData({type: 'player.play_song', message: songId});
+    }, [sendData]);
+
+    const actionPlayAlbum = useCallback((albumId: number, startFrom: number | null) => {
+        sendData({type: 'player.play_album', message: {'album_id': albumId, 'start_from': startFrom}});
+    }, [sendData]);
+
+    const actionPlayPlaylist = useCallback((playlistId: number, startFrom: number | null) => {
+
+        sendData({type: 'player.play_playlist', message: {'playlist_id': playlistId, 'start_from': startFrom}});
     }, [sendData]);
 
     const actionPause = useCallback(() => {
-        sendData({ type: 'player.pause' });
+        sendData({type: 'player.pause'});
     }, [sendData]);
     const actionPlay = useCallback(() => {
-        sendData({ type: 'player.play' });
+        sendData({type: 'player.play'});
     }, [sendData]);
 
     const initWebSocket = useCallback(() => {
@@ -120,7 +99,18 @@ const useWebSocket = () : WebSocketValues => {
         initWebSocket();
     }, [initWebSocket]);
 
-    return { playerData, deviceData, sendData, actionPlayTrack, actionPlay, actionPause, isConnected, reconnect};
+    return {
+        playerData,
+        deviceData,
+        sendData,
+        actionPlayTrack,
+        actionPlay,
+        actionPause,
+        isConnected,
+        reconnect,
+        actionPlayAlbum,
+        actionPlayPlaylist
+    };
 };
 
 export default useWebSocket;

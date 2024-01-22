@@ -1,6 +1,6 @@
 // WebSocketContext.tsx
-import React, {createContext, useContext, useState, useEffect, useCallback, ReactNode} from 'react';
-import useWebSocket from "../services/playerWebsocket";
+import React, {createContext, ReactNode, useContext} from 'react';
+import useWebSocket from "../services/playerWebsocket/playerWebsocket";
 
 interface WebSocketProviderProps {
     children: ReactNode;

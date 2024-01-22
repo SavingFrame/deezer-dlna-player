@@ -1,12 +1,13 @@
 import React from 'react';
 import {Card, CardMedia, CardContent, Typography, TextField, Grid, IconButton, CircularProgress} from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import {useGetPlaylistsQuery} from "../services/playlistService";
+import {useGetPlaylistsQuery} from "../services/playlists/playlistService";
 import {useGetArtistsQuery} from "../services/artistService";
 import {useGetFavouriteTracksQuery,} from "../services/tracksService";
 import {useWebSocketContext} from "../providers/WebSocketProvider";
-import {WebSocketValues} from "../services/playerWebsocket";
-
+import {useGetAlbumsQuery} from "../services/albums/albumService";
+import {useNavigate} from "react-router-dom";
+import {WebSocketValues} from "../services/playerWebsocket/types";
 
 
 interface ItemProps {
@@ -14,17 +15,33 @@ interface ItemProps {
     description?: string;
     imageUrl: string;
     id: number;
+    type: "track" | "album" | "playlist" | "artist";
+    extra?: any;
 }
 
-const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id}) => {
-    const {actionPlayTrack}: WebSocketValues = useWebSocketContext();
+const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id, type, extra}) => {
+    const {actionPlayTrack, actionPlayAlbum}: WebSocketValues = useWebSocketContext();
+    const navigate = useNavigate();
 
-    const handlePlayTrack = (trackId: number) => {
-        console.log('11')
-        actionPlayTrack(trackId);
+    const navigateToDetail = () => {
+        if (type === "track") {
+            navigate(`/album/${extra.albumId}`); // Redirect to the detail page
+        }
+        else {
+            navigate(`/${type}/${id}`); // Redirect to the detail page
+        }
     };
+    const handlePlay = (event: React.MouseEvent<HTMLButtonElement>, instanceId: number) => {
+        event.stopPropagation(); // Prevents redirect when the play button is clicked
+        if (type === "track") {
+            actionPlayTrack(id);
+        } else if (type === "album") {
+            actionPlayAlbum(id, null);
+        }
+    }
+
     return (
-        <Card style={{margin: 8, width: 250, height: 250, position: 'relative'}}>
+        <Card style={{margin: 8, width: 250, height: 250, position: 'relative'}} onClick={navigateToDetail}>
             <CardMedia
                 style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0}}
                 image={imageUrl}
@@ -44,7 +61,7 @@ const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id}) => {
             </CardContent>
             <IconButton
                 aria-label="play"
-                onClick={() => handlePlayTrack(id)}
+                onClick={(event) => handlePlay(event, id)}
                 style={{
                     position: 'absolute',
                     bottom: 10,
@@ -61,9 +78,9 @@ const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id}) => {
 
 const MainPage: React.FC = () => {
     const {data: playlistsData, isLoading: playlistIsLoading} = useGetPlaylistsQuery();
-    // const playlists = [{title: 'Playlist 1', description: 'Description 1', imageUrl: 'playlist-image-url'}];
     const {data: artistsData, isLoading: artistsIsLoading} = useGetArtistsQuery();
     const {data: tracksData, isLoading: tracksIsLoading} = useGetFavouriteTracksQuery();
+    const {data: albumsData, isLoading: albumsIsLoading} = useGetAlbumsQuery();
 
     // handle play track button click
 
@@ -80,9 +97,13 @@ const MainPage: React.FC = () => {
                     <Grid container>
                         {playlistsData?.map((playlist, index) => (
                             <Grid item xs={4} sm={2} md={2} key={index}>
-                                <ItemCard id={playlist.id}
-                                          title={playlist.title} description={playlist.nb_tracks + ' tracks'}
-                                          imageUrl={playlist.picture_medium}/>
+                                <ItemCard
+                                    id={playlist.id}
+                                    title={playlist.title}
+                                    description={playlist.nb_tracks + ' tracks'}
+                                    imageUrl={playlist.picture_medium}
+                                    type={"playlist"}
+                                />
                             </Grid>
                         ))}
                     </Grid>
@@ -97,8 +118,12 @@ const MainPage: React.FC = () => {
                     <Grid container>
                         {artistsData?.map((artist, index) => (
                             <Grid item xs={4} sm={2} md={2} key={index}>
-                                <ItemCard title={artist.name} id={artist.id}
-                                          imageUrl={artist.picture_medium}/>
+                                <ItemCard
+                                    title={artist.name}
+                                    id={artist.id}
+                                    imageUrl={artist.picture_medium}
+                                    type={"artist"}
+                                />
                             </Grid>
                         ))}
                     </Grid>
@@ -113,14 +138,41 @@ const MainPage: React.FC = () => {
                     <Grid container>
                         {tracksData?.map((track, index) => (
                             <Grid item xs={4} sm={2} md={2} key={index}>
-                                <ItemCard title={track.title} description={track.artist.name}
-                                          imageUrl={track.album.cover_medium}
-                                          id={track.id}/>
+                                <ItemCard
+                                    title={track.title}
+                                    description={track.artist.name}
+                                    imageUrl={track.album.cover_medium}
+                                    id={track.id}
+                                    type={"track"}
+                                    extra={{albumId: track.album.id}}
+                                />
                             </Grid>
                         ))}
                     </Grid>
                 )}
             </section>
+
+            <section>
+                <Typography variant="h4" component="h1">Albums</Typography>
+                {albumsIsLoading ? (
+                    <CircularProgress/>
+                ) : (
+                    <Grid container>
+                        {albumsData?.map((album, index) => (
+                            <Grid item xs={4} sm={2} md={2} key={index}>
+                                <ItemCard
+                                    title={album.title}
+                                    description={album.artist.name}
+                                    imageUrl={album.cover_medium}
+                                    id={album.id}
+                                    type={"album"}
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+                )}
+            </section>
+
         </div>
     );
 };

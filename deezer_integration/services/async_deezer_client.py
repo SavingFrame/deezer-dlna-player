@@ -17,6 +17,14 @@ class AsyncDeezerGW(GW):
     async def get_track(self, sng_id):
         return await self.api_call('song.getData', {'SNG_ID': sng_id})
 
+    async def get_artist_top_tracks(self, art_id, limit=100):
+        tracks_array = []
+        body = self.api_call('artist.getTopTrack', {'ART_ID': art_id, 'nb': limit})
+        for track in body['data']:
+            track['POSITION'] = body['data'].index(track)
+            tracks_array.append(track)
+        return tracks_array
+
     async def api_call(self, method, args=None, params=None) -> dict | list:
         if args is None: args = {}
         if params is None: params = {}
@@ -109,6 +117,42 @@ class AsyncDeezerGW(GW):
 
 class AsyncDeezerAPI(API):
 
+    async def search(self, query, strict=False, order=None, index=0, limit=25):
+        args = self._generate_search_args(query, strict, order, index, limit)
+        return await self.api_call('search', args)
+
+    async def search_album(self, query, strict=False, order=None, index=0, limit=25):
+        args = self._generate_search_args(query, strict, order, index, limit)
+        return await self.api_call('search/album', args)
+
+    async def search_artist(self, query, strict=False, order=None, index=0, limit=25):
+        args = self._generate_search_args(query, strict, order, index, limit)
+        return await self.api_call('search/artist', args)
+
+    async def get_artist_top(self, artist_id, index=0, limit=10):
+        return await self.api_call(f'artist/{str(artist_id)}/top', {'index': index, 'limit': limit})
+
+    async def get_artist_albums(self, artist_id, index=0, limit=-1):
+        return await self.api_call(f'artist/{str(artist_id)}/albums', {'index': index, 'limit': limit})
+
+    async def get_artist(self, artist_id):
+        return await self.api_call(f'artist/{str(artist_id)}')
+
+    async def get_user_playlists(self, user_id, index=0, limit=25):
+        return await self.api_call(f'user/{str(user_id)}/playlists', {'index': index, 'limit': limit})
+
+    async def get_user_tracks(self, user_id, index=0, limit=25):
+        return await self.api_call(f'user/{str(user_id)}/tracks', {'index': index, 'limit': limit})
+
+    async def get_user_albums(self, user_id, index=0, limit=25):
+        return await self.api_call(f'user/{str(user_id)}/albums', {'index': index, 'limit': limit})
+
+    async def get_album(self, album_id):
+        return await self.api_call(f'album/{str(album_id)}')
+
+    async def get_playlist(self, playlist_id):
+        return await self.api_call(f'playlist/{str(playlist_id)}')
+
     async def api_call(self, method, args=None):
         if args is None:
             args = {}
@@ -155,18 +199,6 @@ class AsyncDeezerAPI(API):
                 )
             raise APIError(json.dumps(result_json['error']))
         return result_json
-
-    async def get_user_playlists(self, user_id, index=0, limit=25):
-        return await self.api_call(f'user/{str(user_id)}/playlists', {'index': index, 'limit': limit})
-
-    async def get_user_tracks(self, user_id, index=0, limit=25):
-        return await self.api_call(f'user/{str(user_id)}/tracks', {'index': index, 'limit': limit})
-
-    async def get_user_albums(self, user_id, index=0, limit=25):
-        return await self.api_call(f'user/{str(user_id)}/albums', {'index': index, 'limit': limit})
-
-    async def get_album(self, album_id):
-        return await self.api_call(f'album/{str(album_id)}')
 
 
 class AsyncDeezer(Deezer):

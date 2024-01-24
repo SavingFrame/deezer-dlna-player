@@ -1,10 +1,10 @@
 import dataclasses
-import json
 from datetime import date
 from typing import List, TYPE_CHECKING, Optional
 
 from config import settings
 from deezer_integration.services.async_deezer_client import AsyncDeezer
+from deezer_integration.services.deezer import DeezerIntegration
 from library.artist import Artist
 
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ class Album:
     artist: Artist
     cover: str
     tracklist_url: str
-    release_date: date
+    release_date: date | None = None
 
     dlna_device: Optional['DlnaDevice'] = None
 
@@ -78,11 +78,11 @@ class Album:
         if not self.dlna_device:
             raise ValueError('DLNA device is not set')
 
-    async def play(self):
+    async def play(self, start_from: int | None = None):
         self._check_dlna_device()
         tracks = await self.get_tracks()
         player_queue = await self.dlna_device.get_player_queue()
-        await player_queue.set_queue(tracks)
+        await player_queue.set_queue(tracks, start_from=start_from)
         await player_queue.play()
 
     @classmethod
@@ -93,13 +93,14 @@ class Album:
     ) -> 'Album':
         album_dict = api_track_info.get('album')
         artist = artist or await Artist.from_deezer_api_track_info(api_track_info)
+        release_date = album_dict.get('release_date')
         album = cls(
             id=album_dict.get('id'),
             title=album_dict.get('title'),
             cover=album_dict.get('cover_medium'),
             artist=artist,
             tracklist_url=album_dict.get('tracklist'),
-            release_date=date.fromisoformat(album_dict.get('release_date')),
+            release_date=date.fromisoformat(release_date) if release_date else None,
         )
         return album
 
@@ -133,9 +134,13 @@ class Album:
 
     @classmethod
     async def from_deezer_by_id(cls, album_id: str, dlna_device: 'DlnaDevice') -> 'Album':
-        deezer_client = AsyncDeezer()
-        album_info = await deezer_client.api.get_album(album_id)
-        album = await cls.from_deezer_api_album_info(album_info, dlna_device=dlna_device, deezer_client=deezer_client)
+        client = DeezerIntegration()
+        album_info = await client.get_album(int(album_id))
+        album = await cls.from_deezer_api_album_info(
+            album_info,
+            dlna_device=dlna_device,
+            deezer_client=client.async_client
+        )
         return album
 
     def to_dict(self):
@@ -145,23 +150,21 @@ class Album:
             'artist': self.artist.to_dict(),
             'cover': self.cover,
             'tracklist_url': self.tracklist_url,
-            'release_date': self.release_date.isoformat(),
+            'release_date': self.release_date.isoformat() if self.release_date else None,
             '_tracks': self._tracks,
         }
-
-    def to_json(self):
-        return json.dumps(self.to_dict())
 
     @classmethod
     def from_dict(cls, album_dict: dict, dlna_device: Optional['DlnaDevice'] = None) -> 'Album':
         artist = Artist.from_dict(album_dict.get('artist'))
+        release_date = album_dict.get('release_date')
         album = cls(
             id=album_dict.get('id'),
             title=album_dict.get('title'),
             cover=album_dict.get('cover'),
             artist=artist,
             tracklist_url=album_dict.get('tracklist_url'),
-            release_date=date.fromisoformat(album_dict.get('release_date')),
+            release_date=date.fromisoformat(release_date) if release_date else None,
             _tracks=album_dict.get('_tracks'),
             dlna_device=dlna_device,
         )

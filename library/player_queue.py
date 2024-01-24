@@ -17,8 +17,11 @@ class TracksQueue:
         self.tracks = tracks or []
         self.current_track: Optional['Track'] = None
         self.next_track: Optional['Track'] = None
+        self.history = []
 
-    async def set_queue(self, tracks: list['Track']):
+    async def set_queue(self, tracks: list['Track'], start_from: int = None):
+        if start_from:
+            tracks = self.move_queue_tracks(tracks, start_from)
         self.tracks = tracks
         await self.save_to_redis()
 
@@ -37,7 +40,7 @@ class TracksQueue:
         track = self.tracks[0]
         play_song_info = await track.generate_play_song_info(download=True)
         self.next_track = track
-        self.tracks.pop(0)
+        self.history.append(self.tracks.pop(0))
         await self.device.set_next_song(play_song_info)
         await self.save_to_redis()
 
@@ -50,11 +53,37 @@ class TracksQueue:
         if not self.tracks:
             return
         track = self.tracks.pop(0)
+        self.history.append(track)
         self.current_track = track
         await track.play()
         # if self.tracks:
         #     await self.set_next_song()
         await self.save_to_redis()
+
+    async def play_next(self):
+        if not self.tracks:
+            return
+        track = self.tracks.pop(0)
+        self.history.append(track)
+        self.current_track = track
+        await track.play()
+        await self.save_to_redis()
+
+    async def play_previous(self):
+        if not self.history:
+            return
+        track = self.history.pop()
+        self.tracks.insert(0, track)
+        self.current_track = track
+        await track.play()
+        await self.save_to_redis()
+
+    def move_queue_tracks(self, tracks: list['Track'], start_from_track_id: int):
+        for index, track in enumerate(tracks):
+            if track.id == start_from_track_id:
+                tracks = tracks[index:] + tracks[:index]
+                break
+        return tracks
 
     async def save_to_redis(self):
         json_str = json.dumps(self.to_dict())

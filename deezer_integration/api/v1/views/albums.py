@@ -13,3 +13,13 @@ async def albums(limit: int | None = None) -> list[schemas.AlbumSchema]:
     """
     response = await DeezerIntegration().get_albums(limit=limit)
     return response
+
+
+@router.get("/{album_id}")
+async def album(album_id: int) -> schemas.AlbumDetailSchema:
+    """
+    Get album by id.
+    """
+    response = await DeezerIntegration().get_album(album_id=album_id)
+    response.update({'tracks': response.pop('tracks', {}).get('data', [])})
+    return response

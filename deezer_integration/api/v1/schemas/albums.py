@@ -14,3 +14,15 @@ class AlbumSchema(BaseModel):
     nb_tracks: int
     duration: Optional[int] = Field(None, description="Duration in seconds")
     release_date: str
+
+
+class AlbumTrackSchema(BaseModel):
+    id: int
+    title: str
+    duration: int
+
+
+class AlbumDetailSchema(AlbumSchema):
+    cover_big: str
+    fans: Optional[int] = None
+    tracks: list[AlbumTrackSchema]

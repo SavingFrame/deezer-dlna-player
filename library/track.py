@@ -108,6 +108,32 @@ class Track:
         return track
 
     @classmethod
+    async def from_deezer_api_track_info(
+        cls,
+        deezer_track: dict,
+        deezer_downloader: DeezerDownloader | None = None,
+        dlna_device: Optional['DlnaDevice'] = None,
+        artist: Artist | None = None,
+        album: Album | None = None,
+        _deezer_client: AsyncDeezer | None = None
+    ):
+        print('deezer_track', deezer_track)
+        artist = artist or await Artist.from_deezer_api_track_info(deezer_track)
+        album = album or await Album.from_deezer_api_track_info(deezer_track, artist)
+        track = cls(
+            id=deezer_track.get('id'),
+            title=deezer_track.get('title'),
+            artist=artist,
+            duration=deezer_track.get('duration'),
+            album=album,
+            track_number=deezer_track.get('track_position', 1),
+            deezer_downloader=deezer_downloader,
+            dlna_device=dlna_device,
+            _deezer_client=_deezer_client
+        )
+        return track
+
+    @classmethod
     async def from_deezer_by_id(cls, track_id: str, dlna_device: 'DlnaDevice') -> 'Track':
         downloader = DeezerDownloader(track_id)
         deezer_track = await downloader.get_gw_track_info()

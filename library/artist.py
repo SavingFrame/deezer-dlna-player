@@ -5,7 +5,7 @@ import dataclasses
 class Artist:
     id: str
     name: str
-    picture: str
+    picture: str | None
 
     @classmethod
     async def from_deezer_api_related_info(cls, api_related_info: dict):

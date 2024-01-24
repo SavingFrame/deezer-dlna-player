@@ -23,17 +23,6 @@ class DlnaDevice:
 
     def _on_event(self, service, state_variables):
         asyncio.create_task(self.handle_event(service, state_variables))
-        # asyncio.create_task(
-        #     self.notify_subscribers()
-        # )
-        # asyncio.create_task(
-        #     self._send_event_to_queue(service, state_variables)
-        # )
-        # for var in state_variables:
-        #     if var.name == 'NextAVTransportURI':
-        #         print('NextAVTransportURI', var.value)
-        #     if var.name == 'NextAVTransportURI' and not var.value:
-        #         asyncio.create_task(self._set_next_track())
 
     async def handle_event(self, service, state_variables):
         await self.notify_subscribers()
@@ -47,7 +36,7 @@ class DlnaDevice:
                     await player_queue.update_current_track_uri(new_track_uri)
                     await self._set_next_track()
 
-    async def get_player_queue(self):
+    async def get_player_queue(self) -> TracksQueue:
         return await TracksQueue.load_from_redis(device=self) or TracksQueue(device=self)
 
     async def _set_next_track(self):
@@ -107,6 +96,7 @@ class DlnaDevice:
         logger.info(f"Setting next song {song_info.media_url} on {self.upnp_device.friendly_name}")
 
     def player_info(self):
+
         return {
             'media_title': self.dmr_device.media_title,
             'media_artist': self.dmr_device.media_artist,

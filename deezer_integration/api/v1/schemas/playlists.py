@@ -1,6 +1,11 @@
 from pydantic import BaseModel, NaiveDatetime
 
 
+class CreatorSchema(BaseModel):
+    id: int
+    name: str
+
+
 class PlaylistSchema(BaseModel):
     id: int
     title: str
@@ -12,11 +17,7 @@ class PlaylistSchema(BaseModel):
     fans: int
     link: str
     picture_medium: str
-
-
-class CreatorSchema(BaseModel):
-    id: int
-    name: str
+    creator: CreatorSchema
 
 
 class AlbumTrackSchema(BaseModel):
@@ -43,5 +44,4 @@ class TrackSchema(BaseModel):
 class PlaylistDetailSchema(PlaylistSchema):
     picture_big: str
     creation_date: NaiveDatetime
-    creator: CreatorSchema
     tracks: list[TrackSchema]

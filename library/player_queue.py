@@ -15,11 +15,13 @@ class TracksQueue:
     def __init__(self, device: 'DlnaDevice', tracks: list['Track'] = None):
         self.device = device
         self.tracks = tracks or []
+        self.all_tracks = tracks or []
         self.current_track: Optional['Track'] = None
         self.next_track: Optional['Track'] = None
         self.history = []
 
     async def set_queue(self, tracks: list['Track'], start_from: int = None):
+        self.all_tracks = tracks
         if start_from:
             tracks = self.move_queue_tracks(tracks, start_from)
         self.tracks = tracks
@@ -63,19 +65,27 @@ class TracksQueue:
     async def play_next(self):
         if not self.tracks:
             return
-        track = self.tracks.pop(0)
-        self.history.append(track)
-        self.current_track = track
+        self.current_track = self.next_track
+        track = self.current_track
         await track.play()
         await self.save_to_redis()
 
+    @property
+    def current_track_index(self) -> int | None:
+        for index, track in enumerate(self.all_tracks):
+            if track.id == self.current_track.id:
+                return index
+        return None
+
     async def play_previous(self):
-        if not self.history:
+        current_track_index = self.current_track_index
+        track_to_play = self.all_tracks[current_track_index - 1] if current_track_index else None
+        if not track_to_play:
             return
-        track = self.history.pop()
-        self.tracks.insert(0, track)
-        self.current_track = track
-        await track.play()
+        self.tracks.insert(0, track_to_play)
+        self.current_track = track_to_play
+        self.next_track = self.all_tracks[current_track_index]
+        await track_to_play.play()
         await self.save_to_redis()
 
     def move_queue_tracks(self, tracks: list['Track'], start_from_track_id: int):
@@ -106,7 +116,8 @@ class TracksQueue:
             'tracks': [track.to_dict() for track in self.tracks],
             'current_track': self.current_track.to_dict() if self.current_track else None,
             'next_track': self.next_track.to_dict() if self.next_track else None,
-            # 'current_track_uri': self.current_track_uri  # Include current track URI
+            'history': [track.to_dict() for track in self.history],
+            'all_tracks': [track.to_dict() for track in self.all_tracks]
         }
 
     @classmethod
@@ -117,5 +128,6 @@ class TracksQueue:
         queue = cls(device, tracks)
         queue.current_track = current_track
         queue.next_track = next_track
-        # queue.current_track_uri = data['current_track_uri']
+        queue.history = [Track.from_dict(track_data, dlna_device=device) for track_data in data['history']]
+        queue.all_tracks = [Track.from_dict(track_data, dlna_device=device) for track_data in data['all_tracks']]
         return queue

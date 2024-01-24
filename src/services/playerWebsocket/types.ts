@@ -21,8 +21,10 @@ export type PlayerType = {
 export type WebSocketValues = {
     playerData: PlayerType;
     deviceData: DeviceType[];
+    currentDevice: DeviceType | null;
     isConnected: boolean;
     sendData: (data: any) => void; // Adjust the type of 'data' if needed
+    actionSetDevice: (device: DeviceType) => void;
     actionPause: () => void;
     actionPlay: () => void;
     actionPlayTrack: (songId: number) => void;

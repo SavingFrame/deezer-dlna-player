@@ -1,4 +1,7 @@
-import exp from "node:constants";
+type CreatorPlaylistData = {
+    id: number;
+    name: string;
+}
 
 export type PlaylistListData = {
     id: number;
@@ -7,12 +10,8 @@ export type PlaylistListData = {
     nb_tracks: number;
     duration: number;
     link: string;
+    creator: CreatorPlaylistData;
 };
-
-type CreatorPlaylistData = {
-    id: number;
-    name: string;
-}
 
 type AlbumTrackSchema = {
     id: number;
@@ -38,6 +37,5 @@ type TrackSchema = {
 export type DetailPlaylistData = PlaylistListData & {
     picture_big: string;
     creation_date: string;
-    creator: CreatorPlaylistData;
     tracks: TrackSchema[];
 }

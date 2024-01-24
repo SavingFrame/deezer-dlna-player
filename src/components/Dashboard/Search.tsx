@@ -4,8 +4,8 @@ import {
     Button,
     CircularProgress,
     List,
-    ListItem,
-    ListItemAvatar, ListItemButton,
+    ListItemAvatar,
+    ListItemButton,
     ListItemText,
     Typography
 } from '@mui/material';
@@ -16,7 +16,6 @@ import {
 } from "../../services/search/searchService";
 import {useNavigate} from "react-router-dom";
 
-// Assuming fetchData is a prop function that knows which endpoint to hit based on category
 type SearchProps = {
     searchQuery: string;
 };

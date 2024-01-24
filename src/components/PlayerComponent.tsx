@@ -7,7 +7,7 @@ import {
     Grid,
     IconButton,
     List,
-    ListItem,
+    ListItemButton,
     ListItemIcon,
     ListItemText,
     Paper,
@@ -133,13 +133,13 @@ const FixedPlayer: FC = () => {
         actionPlay,
         actionPlayNext,
         actionPlayPrevious,
+        actionSetDevice,
+        currentDevice
     }: WebSocketValues = useWebSocketContext();
-    const [currentDevice, setCurrentDevice] = useState<string | null>(null);
 
 
     const handleDeviceClick = (device: DeviceType) => {
-        setCurrentDevice(device.model_name);
-        sendData({type: "set_device", device_udh: device.udn});
+        actionSetDevice(device);
         setShowDevices(false);
     };
 
@@ -268,7 +268,7 @@ const FixedPlayer: FC = () => {
                                             onClick={() => setShowDevices(!showDevices)}
                                             startIcon={<DlnaIcon/>}
                                         >
-                                            {currentDevice || 'Select DLNA Device'}
+                                            {currentDevice?.friendly_name || 'Select DLNA Device'}
                                         </Button>
                                     ) : (
                                         <Button
@@ -302,7 +302,7 @@ const FixedPlayer: FC = () => {
                 }}>
                     <List>
                         {deviceData.map((device, index) => (
-                            <ListItem key={index} button onClick={() => handleDeviceClick(device)}
+                            <ListItemButton key={index} onClick={() => handleDeviceClick(device)}
                                       style={{borderBottom: '1px solid #ddd'}}>
                                 <ListItemIcon>
                                     {device.icon ? (
@@ -314,7 +314,7 @@ const FixedPlayer: FC = () => {
                                 </ListItemIcon>
                                 <ListItemText primary={<Typography>{device.friendly_name}</Typography>}
                                               secondary={<Typography variant="body2">{device.model_name}</Typography>}/>
-                            </ListItem>
+                            </ListItemButton>
                         ))}
                     </List>
                 </Paper>

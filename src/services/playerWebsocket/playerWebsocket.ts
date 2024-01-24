@@ -18,6 +18,7 @@ const useWebSocket = (): WebSocketValues => {
     });
     const [deviceData, setDeviceData] = useState<DeviceType[]>([]);
     const [isConnected, setIsConnected] = useState(false);
+    const [currentDevice, setCurrentDevice] = useState<DeviceType | null>(null);
 
 
     // Function to send data through WebSocket
@@ -40,7 +41,6 @@ const useWebSocket = (): WebSocketValues => {
     }, [sendData]);
 
     const actionPlayPlaylist = useCallback((playlistId: number, startFrom: number | null) => {
-
         sendData({type: 'player.play_playlist', message: {'playlist_id': playlistId, 'start_from': startFrom}});
     }, [sendData]);
 
@@ -61,6 +61,11 @@ const useWebSocket = (): WebSocketValues => {
     const actionPlayArtistTopTracks = useCallback((artistId: number, startFrom: number | null) => {
         sendData({type: 'player.play_artist_top_tracks', message: {'artist_id': artistId, 'start_from': startFrom}});
     }, [sendData]);
+
+    const actionSetDevice = useCallback((device: DeviceType) => {
+        setCurrentDevice(device);
+        sendData({type: 'set_device', device_udh: device.udn});
+    }, [sendData, webSocket]);
 
     const initWebSocket = useCallback(() => {
         const ws = new WebSocket(WS_URL);
@@ -112,6 +117,7 @@ const useWebSocket = (): WebSocketValues => {
             webSocket.close(); // Ensure the existing connection is closed before reconnecting
         }
         initWebSocket();
+        setCurrentDevice(currentDevice);
     }, [initWebSocket]);
 
     return {
@@ -129,6 +135,8 @@ const useWebSocket = (): WebSocketValues => {
         actionPlayNext,
         actionPlayPrevious,
         actionPlayArtistTopTracks,
+        actionSetDevice,
+        currentDevice
     };
 };
 

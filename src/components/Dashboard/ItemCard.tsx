@@ -1,75 +1,79 @@
 import React from "react";
-import {WebSocketValues} from "../../services/playerWebsocket/types";
-import {useWebSocketContext} from "../../providers/WebSocketProvider";
-import {useNavigate} from "react-router-dom";
-import {Card, CardContent, CardMedia, IconButton, Typography} from "@mui/material";
+import {Card, CardActionArea, CardMedia, CardContent, Typography, Box, IconButton} from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import {useNavigate} from "react-router-dom";
+import {useWebSocketContext} from "../../providers/WebSocketProvider";
 
 interface ItemProps {
     title: string;
     description?: string;
+    description2?: string;
     imageUrl: string;
     id: number;
     type: "track" | "album" | "playlist" | "artist";
     extra?: any;
 }
 
-const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id, type, extra}) => {
-    const {actionPlayTrack, actionPlayAlbum}: WebSocketValues = useWebSocketContext();
+const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id, type, description2, extra}) => {
     const navigate = useNavigate();
+    const {actionPlayTrack, actionPlayAlbum, playerData, actionPause} = useWebSocketContext();
 
     const navigateToDetail = () => {
         if (type === "track") {
-            navigate(`/album/${extra.albumId}`); // Redirect to the detail page
+            navigate(`/album/${extra.albumId}`);
         } else {
-            navigate(`/${type}/${id}`); // Redirect to the detail page
+            navigate(`/${type}/${id}`);
         }
     };
-    const handlePlay = (event: React.MouseEvent<HTMLButtonElement>, instanceId: number) => {
-        event.stopPropagation(); // Prevents redirect when the play button is clicked
-        if (type === "track") {
-            actionPlayTrack(id);
-        } else if (type === "album") {
-            actionPlayAlbum(id, null);
+
+    const checkIfPlaying = () => {
+        // Adjust this condition based on how you determine if the item is currently playing
+        return playerData.media_album === title;
+    };
+
+    const handlePlay = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        if (checkIfPlaying()) {
+            actionPause();
+        } else {
+            type === "track" ? actionPlayTrack(id) : actionPlayAlbum(id, null);
         }
-    }
+    };
 
     return (
-        <Card style={{position: 'relative', width: '100%'}} onClick={navigateToDetail}>
-            <div style={{paddingTop: '100%'}}></div>
-            {/* Aspect ratio box */}
-            <CardMedia
-                style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0}}
-                image={imageUrl}
-                title={title}
-            />
-            <CardContent style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center'
-            }}>
-                <Typography variant="h6" component="h2" style={{color: 'white'}}>
-                    {title}
-                </Typography>
-                {description && <Typography color="textSecondary">{description}</Typography>}
-            </CardContent>
-            <IconButton
-                aria-label="play"
-                onClick={(event) => handlePlay(event, id)}
-                style={{
-                    position: 'absolute',
-                    bottom: 10,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: 'white'
-                }}
-            >
-                <PlayArrowIcon color="primary"/>
-            </IconButton>
+        <Card sx={{maxWidth: 345, m: 'auto', position: 'relative'}} onClick={navigateToDetail}>
+            <CardActionArea>
+                <CardMedia
+                    component="img"
+                    height="200"
+                    image={imageUrl}
+                    alt={title}
+                />
+                <CardContent>
+                    <Typography gutterBottom variant="h6" component="div" noWrap>
+                        {title}
+                    </Typography>
+                    {description && <Typography variant="body2" color="text.secondary">
+                        {description}
+                    </Typography>}
+                    {description2 && <Typography variant="body2" color="text.secondary">
+                        {description2}
+                    </ Typography>}
+                </CardContent>
+            </CardActionArea>
+            <Box sx={{position: 'absolute', bottom: 0, right: 0, zIndex: 2, p: 1}}>
+                <IconButton
+                    aria-label={checkIfPlaying() ? 'Pause' : 'Play'}
+                    onClick={handlePlay}
+                    size="large"
+                    sx={{color: 'primary.main'}}
+                >
+                    {checkIfPlaying() ? <PauseIcon/> : <PlayArrowIcon/>}
+                </IconButton>
+            </Box>
         </Card>
-    )
+    );
 };
 
 export default ItemCard;

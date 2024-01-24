@@ -54,9 +54,6 @@ const MainPage: React.FC = () => {
     };
 
 
-
-
-
     return (
         <div style={{padding: 16}}>
             <TextField
@@ -92,6 +89,7 @@ const MainPage: React.FC = () => {
                                     id={playlist.id}
                                     title={playlist.title}
                                     description={playlist.nb_tracks + ' tracks'}
+                                    description2={'by ' + playlist.creator.name}
                                     imageUrl={playlist.picture_medium}
                                     type={"playlist"}
                                 />

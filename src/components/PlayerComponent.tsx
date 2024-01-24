@@ -2,7 +2,8 @@
 import React, {FC, useEffect, useState} from 'react';
 import {
     AppBar,
-    Button, debounce,
+    Button,
+    debounce,
     Grid,
     IconButton,
     List,
@@ -129,7 +130,9 @@ const FixedPlayer: FC = () => {
         isConnected,
         reconnect,
         actionPause,
-        actionPlay
+        actionPlay,
+        actionPlayNext,
+        actionPlayPrevious,
     }: WebSocketValues = useWebSocketContext();
     const [currentDevice, setCurrentDevice] = useState<string | null>(null);
 
@@ -144,7 +147,7 @@ const FixedPlayer: FC = () => {
         if (typeof newValue !== 'number') {
             newValue = newValue[0];
         }
-        if (playerData.volume_level * 100 !== newValue){
+        if (playerData.volume_level * 100 !== newValue) {
             sendData({type: 'device.set_volume', message: newValue});
         }
     }
@@ -158,7 +161,7 @@ const FixedPlayer: FC = () => {
 
     // Interval to increment media position
     useEffect(() => {
-        let intervalId : NodeJS.Timeout;
+        let intervalId: NodeJS.Timeout;
 
         // Check if media is playing and start an interval
         if (playerData.is_playing) {
@@ -191,8 +194,8 @@ const FixedPlayer: FC = () => {
                                 {playerData.media_image_url && (
                                     <Grid item style={{maxWidth: 100, paddingRight: 10}}>
                                         <CoverImage>
-                                        <img src={playerData.media_image_url} alt="Media Cover"
-                                             style={{maxWidth: '100%', height: 'auto'}}/>
+                                            <img src={playerData.media_image_url} alt="Media Cover"
+                                                 style={{maxWidth: '100%', height: 'auto'}}/>
                                         </CoverImage>
                                     </Grid>
                                 )}
@@ -206,14 +209,22 @@ const FixedPlayer: FC = () => {
                                     </Typography>
                                 </Grid>
                                 <Grid item xs={6} style={{textAlign: 'center'}}>
-                                    <IconButton color="inherit" disabled={!isConnected}>
+                                    <IconButton
+                                        color="inherit"
+                                        disabled={!isConnected}
+                                        onClick={() => actionPlayPrevious()}
+                                    >
                                         <SkipPreviousIcon/>
                                     </IconButton>
                                     <IconButton color="inherit" disabled={!isConnected}
                                                 onClick={() => playerData.is_playing ? actionPause() : actionPlay()}>
                                         {playerData.is_playing ? <PauseIcon/> : <PlayCircleOutlineIcon/>}
                                     </IconButton>
-                                    <IconButton color="inherit" disabled={!isConnected}>
+                                    <IconButton
+                                        color="inherit"
+                                        disabled={!isConnected}
+                                        onClick={() => actionPlayNext()}
+                                    >
                                         <SkipNextIcon/>
                                     </IconButton>
                                     <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
@@ -260,8 +271,13 @@ const FixedPlayer: FC = () => {
                                             {currentDevice || 'Select DLNA Device'}
                                         </Button>
                                     ) : (
-                                        <Button variant="contained" color="primary"
-                                                onClick={reconnect}>Reconnect</Button>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={reconnect}
+                                        >
+                                            Reconnect
+                                        </Button>
                                     )}
                                 </Grid>
                             </Grid>

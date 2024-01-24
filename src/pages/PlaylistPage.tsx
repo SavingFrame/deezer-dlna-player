@@ -9,8 +9,10 @@ import {Item} from "../components/detailPage/types";
 import {useGetPlaylistQuery} from "../services/playlists/playlistService";
 import {WebSocketValues} from "../services/playerWebsocket/types";
 import {useWebSocketContext} from "../providers/WebSocketProvider";
+import useDocumentTitle from "../services/headerTitle/useHeaderTitle";
 
 const PlaylistPage: React.FC = () => {
+    useDocumentTitle('Playlist');
     const {actionPlayPlaylist}: WebSocketValues = useWebSocketContext();
     const {id} = useParams<{ id: string }>();
     if (!id) {
@@ -43,7 +45,7 @@ const PlaylistPage: React.FC = () => {
         <div style={{padding: 16}}>
             {playlistIsLoading ? <SkeletonHeader/> :
                 <Header title={playlistData!.title} description={playlistData!.creator.name} imageUrl={playlistData!.picture_medium}/>}
-            {playlistIsLoading ? <SkeletonItemList/> :
+            {playlistIsLoading ? <SkeletonItemList count={10}/> :
                 <ItemList items={items} type={type} onPlay={handlePlayClick} parentItemId={playlistData!.id} />}
         </div>
     );

@@ -35,6 +35,10 @@ const useWebSocket = (): WebSocketValues => {
         sendData({type: 'player.play_album', message: {'album_id': albumId, 'start_from': startFrom}});
     }, [sendData]);
 
+    const actionPlayFlow = useCallback(() => {
+        sendData({type: 'player.play_flow'});
+    }, [sendData]);
+
     const actionPlayPlaylist = useCallback((playlistId: number, startFrom: number | null) => {
 
         sendData({type: 'player.play_playlist', message: {'playlist_id': playlistId, 'start_from': startFrom}});
@@ -45,6 +49,17 @@ const useWebSocket = (): WebSocketValues => {
     }, [sendData]);
     const actionPlay = useCallback(() => {
         sendData({type: 'player.play'});
+    }, [sendData]);
+    const actionPlayNext = useCallback(() => {
+        sendData({type: 'player.next'});
+    }, [sendData]);
+
+    const actionPlayPrevious = useCallback(() => {
+        sendData({type: 'player.previous'});
+    }, [sendData]);
+
+    const actionPlayArtistTopTracks = useCallback((artistId: number, startFrom: number | null) => {
+        sendData({type: 'player.play_artist_top_tracks', message: {'artist_id': artistId, 'start_from': startFrom}});
     }, [sendData]);
 
     const initWebSocket = useCallback(() => {
@@ -109,7 +124,11 @@ const useWebSocket = (): WebSocketValues => {
         isConnected,
         reconnect,
         actionPlayAlbum,
-        actionPlayPlaylist
+        actionPlayPlaylist,
+        actionPlayFlow,
+        actionPlayNext,
+        actionPlayPrevious,
+        actionPlayArtistTopTracks,
     };
 };
 

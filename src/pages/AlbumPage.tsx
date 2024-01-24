@@ -9,8 +9,10 @@ import {useParams} from "react-router-dom";
 import {Item} from "../components/detailPage/types";
 import {WebSocketValues} from "../services/playerWebsocket/types";
 import {useWebSocketContext} from "../providers/WebSocketProvider";
+import useDocumentTitle from "../services/headerTitle/useHeaderTitle";
 
 const AlbumPage: React.FC = () => {
+    useDocumentTitle('Album');
     const {actionPlayAlbum}: WebSocketValues = useWebSocketContext();
     const {id} = useParams<{ id: string }>();
     if (!id) {
@@ -41,7 +43,7 @@ const AlbumPage: React.FC = () => {
         <div style={{padding: 16}}>
             {albumIsLoading ? <SkeletonHeader/> :
                 <Header title={albumData!.title} description={albumData!.artist.name} imageUrl={albumData!.cover_big}/>}
-            {albumIsLoading ? <SkeletonItemList/> :
+            {albumIsLoading ? <SkeletonItemList count={20}/> :
                 <ItemList items={items} type={type} albumCoverUrl={albumData!.cover_medium} parentItemId={albumData!.id}
                           onPlay={handlePlayClick}/>}
         </div>

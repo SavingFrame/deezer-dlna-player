@@ -1,8 +1,11 @@
 // ItemList.js
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Avatar, Divider, Grid, IconButton, List, ListItem, ListItemIcon, styled, Typography} from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import {ItemListProps} from './types';
+import {Item, ItemListProps} from './types';
+import {WebSocketValues} from "../../services/playerWebsocket/types";
+import {useWebSocketContext} from "../../providers/WebSocketProvider";
+import PauseIcon from "@mui/icons-material/Pause";
 
 const PlayIconButton = styled(IconButton)(({theme}) => ({
     '&:hover': {
@@ -28,13 +31,17 @@ const StyledListItemIcon = styled(ListItemIcon)({
 
 
 const ItemList: React.FC<ItemListProps> = ({items, type, albumCoverUrl, onPlay, parentItemId}) => {
-
-
+    const {playerData}: WebSocketValues = useWebSocketContext();
+    const isPlaying = (item: Item) => {
+        return item.title === playerData.media_title && item.description === playerData.media_artist;
+    };
+    console.log('player data', playerData);
     return (
         <List>
             {items.map((item, index) => (
                 <React.Fragment key={item.id}>
-                    <StyledListItem alignItems="center">
+                    <StyledListItem alignItems="center"
+                                    sx={{backgroundColor: isPlaying(item) ? 'rgba(0, 0, 0, 0.08)' : 'inherit'}}>
                         {/* Index */}
                         <StyledListItemIcon>
                             <Typography variant="body2">{index + 1}.</Typography>
@@ -46,9 +53,14 @@ const ItemList: React.FC<ItemListProps> = ({items, type, albumCoverUrl, onPlay, 
                             )}
                         </StyledListItemIcon>
                         {/* Additional Columns */}
-                        <Grid container spacing={2} sx={{flex: 1, mr: 2}}>
+                        <Grid container spacing={2} sx={{flex: 1, mr: 2, alignItems: 'center' }}>
                             <Grid item xs>
                                 <Typography variant="subtitle1">{item.title}</Typography>
+                                {item.description && (
+                                    <Typography variant="body2" color="textSecondary" >
+                                        {item.description}
+                                    </Typography>
+                                )}
                             </Grid>
                             {item.column1 && (
                                 <Grid item xs>
@@ -67,9 +79,10 @@ const ItemList: React.FC<ItemListProps> = ({items, type, albumCoverUrl, onPlay, 
                             )}
                         </Grid>
                         {/* Play Button */}
-                        <PlayIconButton edge="end" aria-label="play" onClick={() => onPlay(parentItemId, item.id)}>
-                            <PlayArrowIcon/>
+                        <PlayIconButton edge="end" aria-label={isPlaying(item) ? 'pause' : 'play'} onClick={() => onPlay(parentItemId, item.id)}>
+                            {isPlaying(item) ? <PauseIcon /> : <PlayArrowIcon />}
                         </PlayIconButton>
+
                     </StyledListItem>
                     {index < items.length - 1 && <Divider component="li"/>}
                 </React.Fragment>

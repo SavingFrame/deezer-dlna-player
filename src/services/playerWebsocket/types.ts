@@ -28,5 +28,9 @@ export type WebSocketValues = {
     actionPlayTrack: (songId: number) => void;
     actionPlayAlbum: (albumId: number, startFrom: number | null) => void;
     actionPlayPlaylist: (playlistId: number, startFrom: number | null) => void;
+    actionPlayArtistTopTracks: (artistId: number, startFrom: number | null) => void;
+    actionPlayFlow: () => void;
+    actionPlayNext: () => void;
+    actionPlayPrevious: () => void;
     reconnect: () => void;
 };

@@ -1,24 +1,16 @@
 import {Skeleton} from "@mui/material";
 import React from "react";
 
-const SkeletonItemList = () => {
+type SkeletonItemListProps = {
+    count: number;
+};
+const SkeletonItemList: React.FC<SkeletonItemListProps> = ({count}) => {
     return (
         <div>
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
-            <Skeleton variant="rectangular" height={56} style={{ marginBottom: 8 }} />
+            {Array.from(new Array(count)).map((_, index) => (
+                <Skeleton variant="rectangular" height={56} style={{marginBottom: 8}} key={index}/>
+            ))}
+
         </div>
     );
 };

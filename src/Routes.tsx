@@ -4,6 +4,7 @@ import MainPage from "./pages/MainPage";
 import Layout from "./components/Layout";
 import AlbumPage from "./pages/AlbumPage";
 import PlaylistPage from "./pages/PlaylistPage";
+import ArtistPage from "./pages/ArtistPage";
 
 const AppRoutes: FC = () => {
     // const navigate = useNavigate();
@@ -30,6 +31,14 @@ const AppRoutes: FC = () => {
                 element={
                     <Layout>
                         <PlaylistPage/>
+                    </Layout>
+                }
+            />
+            <Route
+                path={"/artist/:id"}
+                element={
+                    <Layout>
+                        <ArtistPage/>
                     </Layout>
                 }
             />

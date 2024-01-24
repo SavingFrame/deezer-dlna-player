@@ -1,102 +1,93 @@
-import React from 'react';
-import {Card, CardMedia, CardContent, Typography, TextField, Grid, IconButton, CircularProgress} from '@mui/material';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import React, {useEffect, useState} from 'react';
+import {CircularProgress, Dialog, DialogContent, DialogTitle, Grid, TextField, Typography} from '@mui/material';
 import {useGetPlaylistsQuery} from "../services/playlists/playlistService";
-import {useGetArtistsQuery} from "../services/artistService";
+import {useGetArtistsQuery} from "../services/artists/artistService";
 import {useGetFavouriteTracksQuery,} from "../services/tracksService";
-import {useWebSocketContext} from "../providers/WebSocketProvider";
 import {useGetAlbumsQuery} from "../services/albums/albumService";
-import {useNavigate} from "react-router-dom";
-import {WebSocketValues} from "../services/playerWebsocket/types";
+import ItemCard from "../components/Dashboard/ItemCard";
+import FlowBanner from "../components/Dashboard/FlowBanner";
+import useDocumentTitle from "../services/headerTitle/useHeaderTitle";
+import Search from "../components/Dashboard/Search";
 
 
-interface ItemProps {
-    title: string;
-    description?: string;
-    imageUrl: string;
-    id: number;
-    type: "track" | "album" | "playlist" | "artist";
-    extra?: any;
-}
-
-const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id, type, extra}) => {
-    const {actionPlayTrack, actionPlayAlbum}: WebSocketValues = useWebSocketContext();
-    const navigate = useNavigate();
-
-    const navigateToDetail = () => {
-        if (type === "track") {
-            navigate(`/album/${extra.albumId}`); // Redirect to the detail page
-        }
-        else {
-            navigate(`/${type}/${id}`); // Redirect to the detail page
-        }
-    };
-    const handlePlay = (event: React.MouseEvent<HTMLButtonElement>, instanceId: number) => {
-        event.stopPropagation(); // Prevents redirect when the play button is clicked
-        if (type === "track") {
-            actionPlayTrack(id);
-        } else if (type === "album") {
-            actionPlayAlbum(id, null);
-        }
-    }
-
-    return (
-        <Card style={{margin: 8, width: 250, height: 250, position: 'relative'}} onClick={navigateToDetail}>
-            <CardMedia
-                style={{height: '100%', width: '100%', position: 'absolute', top: 0, left: 0}}
-                image={imageUrl}
-                title={title}
-            />
-            <CardContent style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center'
-            }}>
-                <Typography variant="h6" component="h2" style={{color: 'white'}}>
-                    {title}
-                </Typography>
-                {description && <Typography color="textSecondary">{description}</Typography>}
-            </CardContent>
-            <IconButton
-                aria-label="play"
-                onClick={(event) => handlePlay(event, id)}
-                style={{
-                    position: 'absolute',
-                    bottom: 10,
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: 'white'
-                }}
-            >
-                <PlayArrowIcon color="primary"/>
-            </IconButton>
-        </Card>
-    )
-};
 
 const MainPage: React.FC = () => {
+    useDocumentTitle('Main Page');
     const {data: playlistsData, isLoading: playlistIsLoading} = useGetPlaylistsQuery();
     const {data: artistsData, isLoading: artistsIsLoading} = useGetArtistsQuery();
     const {data: tracksData, isLoading: tracksIsLoading} = useGetFavouriteTracksQuery();
     const {data: albumsData, isLoading: albumsIsLoading} = useGetAlbumsQuery();
 
-    // handle play track button click
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+    const [isSearchDialogOpen, setSearchDialogOpen] = useState(false);
+
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            if (searchQuery.trim() !== '') {
+                setDebouncedSearchQuery(searchQuery);
+                setSearchDialogOpen(true);
+            } else {
+                setSearchDialogOpen(false);
+            }
+        }, 3000);
+
+        return () => clearTimeout(handler);
+    }, [searchQuery]);
+
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(event.target.value);
+    };
+    const handleCloseSearchDialog = () => {
+        setSearchDialogOpen(false);
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            // Logic to execute on Enter key press
+            if (searchQuery.trim() !== '') {
+                setDebouncedSearchQuery(searchQuery);
+                setSearchDialogOpen(true);
+            }
+        }
+    };
+
+
+
 
 
     return (
         <div style={{padding: 16}}>
-            <TextField fullWidth label="Search Music" variant="outlined" style={{marginBottom: 16}}/>
+            <TextField
+                fullWidth
+                label="Search Music"
+                variant="outlined"
+                style={{ marginBottom: 16 }}
+                value={searchQuery}
+                onChange={handleSearchChange}
+                onKeyDown={handleKeyDown}
+            />
+
+            <FlowBanner />
+
+            <Dialog open={isSearchDialogOpen} onClose={handleCloseSearchDialog} maxWidth="md" fullWidth>
+                <DialogTitle>Search Results</DialogTitle>
+                <DialogContent>
+                    {debouncedSearchQuery && <Search searchQuery={debouncedSearchQuery} />}
+                </DialogContent>
+            </Dialog>
+
+
 
             <section>
                 <Typography variant="h4" component="h1">Your Last Playlists</Typography>
                 {playlistIsLoading ? (
                     <CircularProgress/>
                 ) : (
-                    <Grid container>
+                    <Grid container spacing={2}>
                         {playlistsData?.map((playlist, index) => (
-                            <Grid item xs={4} sm={2} md={2} key={index}>
+                            <Grid item xs={6} sm={4} md={3} lg={2} xl={1} key={index}>
                                 <ItemCard
                                     id={playlist.id}
                                     title={playlist.title}
@@ -111,13 +102,13 @@ const MainPage: React.FC = () => {
             </section>
 
             <section>
-                <Typography variant="h4" component="h1">Favoruite artists</Typography>
+                <Typography variant="h4" component="h1">Favorite artists</Typography>
                 {artistsIsLoading ? (
                     <CircularProgress/>
                 ) : (
-                    <Grid container>
+                    <Grid container spacing={2}>
                         {artistsData?.map((artist, index) => (
-                            <Grid item xs={4} sm={2} md={2} key={index}>
+                            <Grid item xs={6} sm={4} md={3} lg={2} xl={1} key={index}>
                                 <ItemCard
                                     title={artist.name}
                                     id={artist.id}
@@ -135,9 +126,9 @@ const MainPage: React.FC = () => {
                 {tracksIsLoading ? (
                     <CircularProgress/>
                 ) : (
-                    <Grid container>
+                    <Grid container spacing={2}>
                         {tracksData?.map((track, index) => (
-                            <Grid item xs={4} sm={2} md={2} key={index}>
+                            <Grid item xs={6} sm={4} md={3} lg={2} xl={1} key={index}>
                                 <ItemCard
                                     title={track.title}
                                     description={track.artist.name}
@@ -159,7 +150,7 @@ const MainPage: React.FC = () => {
                 ) : (
                     <Grid container>
                         {albumsData?.map((album, index) => (
-                            <Grid item xs={4} sm={2} md={2} key={index}>
+                            <Grid item xs={6} sm={4} md={3} lg={2} xl={1} key={index}>
                                 <ItemCard
                                     title={album.title}
                                     description={album.artist.name}

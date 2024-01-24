@@ -1,6 +1,7 @@
 import React, {FC, ReactNode} from 'react';
 import FixedPlayer from './PlayerComponent';
-import {Box} from "@mui/material"; // Import your FixedPlayer component
+import {Box} from "@mui/material";
+import NavigationHeader from "./NavigationHeader"; // Import your FixedPlayer component
 
 interface LayoutProps {
     children: ReactNode;
@@ -8,7 +9,8 @@ interface LayoutProps {
 
 const Layout: FC<LayoutProps> = ({ children }) => {
     return (
-        <Box sx={{ pb: '64px' }}> {/* Adjust this value based on the actual height of FixedPlayer */}
+        <Box sx={{ pb: '64px' }}>
+            <NavigationHeader />
             {children}
             <FixedPlayer />
         </Box>

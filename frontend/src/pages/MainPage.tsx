@@ -10,7 +10,6 @@ import useDocumentTitle from "../services/headerTitle/useHeaderTitle";
 import Search from "../components/Dashboard/Search";
 
 
-
 const MainPage: React.FC = () => {
     useDocumentTitle('Main Page');
     const {data: playlistsData, isLoading: playlistIsLoading} = useGetPlaylistsQuery();
@@ -60,21 +59,20 @@ const MainPage: React.FC = () => {
                 fullWidth
                 label="Search Music"
                 variant="outlined"
-                style={{ marginBottom: 16 }}
+                style={{marginBottom: 16}}
                 value={searchQuery}
                 onChange={handleSearchChange}
                 onKeyDown={handleKeyDown}
             />
 
-            <FlowBanner />
+            <FlowBanner/>
 
             <Dialog open={isSearchDialogOpen} onClose={handleCloseSearchDialog} maxWidth="md" fullWidth>
                 <DialogTitle>Search Results</DialogTitle>
                 <DialogContent>
-                    {debouncedSearchQuery && <Search searchQuery={debouncedSearchQuery} />}
+                    {debouncedSearchQuery && <Search searchQuery={debouncedSearchQuery}/>}
                 </DialogContent>
             </Dialog>
-
 
 
             <section>
@@ -84,16 +82,14 @@ const MainPage: React.FC = () => {
                 ) : (
                     <Grid container spacing={2}>
                         {playlistsData?.map((playlist, index) => (
-                            <Grid item xs={6} sm={4} md={3} lg={2} xl={1} key={index}>
-                                <ItemCard
-                                    id={playlist.id}
-                                    title={playlist.title}
-                                    description={playlist.nb_tracks + ' tracks'}
-                                    description2={'by ' + playlist.creator.name}
-                                    imageUrl={playlist.picture_medium}
-                                    type={"playlist"}
-                                />
-                            </Grid>
+                            <ItemCard
+                                id={playlist.id}
+                                title={playlist.title}
+                                description={playlist.nb_tracks + ' tracks'}
+                                description2={'by ' + playlist.creator.name}
+                                imageUrl={playlist.picture_medium}
+                                type={"playlist"}
+                            />
                         ))}
                     </Grid>
                 )}
@@ -106,14 +102,12 @@ const MainPage: React.FC = () => {
                 ) : (
                     <Grid container spacing={2}>
                         {artistsData?.map((artist, index) => (
-                            <Grid item xs={6} sm={4} md={3} lg={2} xl={1} key={index}>
-                                <ItemCard
-                                    title={artist.name}
-                                    id={artist.id}
-                                    imageUrl={artist.picture_medium}
-                                    type={"artist"}
-                                />
-                            </Grid>
+                            <ItemCard
+                                title={artist.name}
+                                id={artist.id}
+                                imageUrl={artist.picture_medium}
+                                type={"artist"}
+                            />
                         ))}
                     </Grid>
                 )}
@@ -126,16 +120,14 @@ const MainPage: React.FC = () => {
                 ) : (
                     <Grid container spacing={2}>
                         {tracksData?.map((track, index) => (
-                            <Grid item xs={6} sm={4} md={3} lg={2} xl={1} key={index}>
-                                <ItemCard
-                                    title={track.title}
-                                    description={track.artist.name}
-                                    imageUrl={track.album.cover_medium}
-                                    id={track.id}
-                                    type={"track"}
-                                    extra={{albumId: track.album.id}}
-                                />
-                            </Grid>
+                            <ItemCard
+                                title={track.title}
+                                description={track.artist.name}
+                                imageUrl={track.album.cover_medium}
+                                id={track.id}
+                                type={"track"}
+                                extra={{albumId: track.album.id}}
+                            />
                         ))}
                     </Grid>
                 )}
@@ -148,15 +140,13 @@ const MainPage: React.FC = () => {
                 ) : (
                     <Grid container>
                         {albumsData?.map((album, index) => (
-                            <Grid item xs={6} sm={4} md={3} lg={2} xl={1} key={index}>
-                                <ItemCard
-                                    title={album.title}
-                                    description={album.artist.name}
-                                    imageUrl={album.cover_medium}
-                                    id={album.id}
-                                    type={"album"}
-                                />
-                            </Grid>
+                            <ItemCard
+                                title={album.title}
+                                description={album.artist.name}
+                                imageUrl={album.cover_medium}
+                                id={album.id}
+                                type={"album"}
+                            />
                         ))}
                     </Grid>
                 )}

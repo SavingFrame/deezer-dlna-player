@@ -1,4 +1,7 @@
-export const BASE_URL = 'http://localhost:8000';
+
+const urlFromEnv = process.env.REACT_APP_API_URL;
+console.log(urlFromEnv)
+export const BASE_URL = urlFromEnv === undefined ? 'http://localhost:8000' : urlFromEnv;
 
 
 const wsConnectionProtocol = BASE_URL.startsWith('https') ? 'wss' : 'ws';

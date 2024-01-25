@@ -68,7 +68,12 @@ const useWebSocket = (): WebSocketValues => {
     }, [sendData, webSocket]);
 
     const initWebSocket = useCallback(() => {
-        const ws = new WebSocket(WS_URL);
+        let wsUrl = WS_URL;
+        if (!wsUrl.startsWith('ws')) {
+            const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+            wsUrl = `${protocol}://${window.location.host}${wsUrl}`;
+        }
+        const ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
             setIsConnected(true);

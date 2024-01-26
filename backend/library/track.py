@@ -117,7 +117,6 @@ class Track:
         album: Album | None = None,
         _deezer_client: AsyncDeezer | None = None
     ):
-        print('deezer_track', deezer_track)
         artist = artist or await Artist.from_deezer_api_track_info(deezer_track)
         album = album or await Album.from_deezer_api_track_info(deezer_track, artist)
         track = cls(

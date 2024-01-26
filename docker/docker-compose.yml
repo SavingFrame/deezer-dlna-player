@@ -45,7 +45,7 @@ services:
       - MEDIA_URL=http://192.168.0.83:8063/media/
       - REDIS_URL=redis://localhost:6379/0
       - RABBITMQ_URL=amqp://guest:guest@localhost:5672/
-      - PORT=8063
+      - PORT=8062
   task_worker:
     build: ../backend
     command: python /code/utils/task_worker/task_worker.py

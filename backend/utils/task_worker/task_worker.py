@@ -2,18 +2,19 @@ import asyncio
 import importlib
 import json
 import logging
+from logging.config import dictConfig
 from pathlib import Path
 
 import aio_pika
 from aio_pika.abc import AbstractIncomingMessage, DeliveryMode
 
+import config
 from config import settings
 from utils.rabbitmq import channel_pool
 from utils.task_worker.task_registry import TASK_REGISTRY
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('task_worker')
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
 
 
 class PlayerTaskWorker:
@@ -26,10 +27,10 @@ class PlayerTaskWorker:
 
             # Declaring queue
             queue = await channel.declare_queue(
-                durable=False,
+                "task_worker", durable=False,
             )
             exchange = await channel.declare_exchange(
-                'task_worker', aio_pika.ExchangeType.DIRECT
+                'deezer_dlna_player', aio_pika.ExchangeType.DIRECT
             )
 
             await queue.bind(exchange, routing_key="task_queue")
@@ -87,12 +88,11 @@ class PlayerTaskWorker:
             data_json = json.loads(data)
             if message.routing_key == 'task_queue':
                 await self.on_message(data_json)
-            # elif message.routing_key == 'upnp_notify':
-            #     await self.upnp_notify_on_message(data_json)
-
-    # async def upnp_notify_on_message(self, data: list | dict) -> None:
-    #     logger.info("Received UpnP notify message: %s", data)
+            elif message.routing_key == 'upnp_listener':
+                from player_worker.upnp_listener import player_upnp_event
+                await player_upnp_event(data_json)
 
 
 if __name__ == "__main__":
+    dictConfig(config.log_config)
     asyncio.run(PlayerTaskWorker().run_worker())

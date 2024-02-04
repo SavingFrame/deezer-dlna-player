@@ -9,9 +9,9 @@ from async_upnp_client.utils import get_local_ip
 
 from dlna.dataclasses import PlaySongInfo
 from library.player_queue import TracksQueue
-from utils.task_worker.task_worker import PlayerTaskWorker
 from utils.upnp.dlna import CustomDmrDevice
-from ws.utils import send_message_to_specific_clients
+from utils.upnp_listener.upnp_listener import UpnpListener
+from utils.broadcaster.utils import send_message_to_specific_clients
 
 logger = logging.getLogger('dlna_device')
 
@@ -25,21 +25,24 @@ class DlnaDevice:
         asyncio.create_task(self.handle_event(service, state_variables))
 
     async def handle_event(self, service, state_variables):
-        await self.notify_subscribers()
+        logger.info(f"Event received {service.service_id} {state_variables}")
+
+        # await self.notify_subscribers()
         await self._send_event_to_queue(service, state_variables)
-        player_queue = await self.get_player_queue()
-        for var in state_variables:
-            if var.name == 'AVTransportURI':
-                new_track_uri = var.value
-                current_track_uri = await player_queue.get_current_track_uri()
-                if new_track_uri != current_track_uri:
-                    await player_queue.update_current_track_uri(new_track_uri)
-                    await self._set_next_track()
+        # player_queue = await self.get_player_queue()
+        # for var in state_variables:
+        #     if var.name == 'AVTransportURI':
+        #         new_track_uri = var.value
+        #         current_track_uri = await player_queue.get_current_track_uri()
+        #         if new_track_uri != current_track_uri:
+        #             await player_queue.update_current_track_uri(new_track_uri)
+        #             await self._set_next_track()
 
     async def get_player_queue(self) -> TracksQueue:
         return await TracksQueue.load_from_redis(device=self) or TracksQueue(device=self)
 
     async def _set_next_track(self):
+        from utils.task_worker.task_worker import PlayerTaskWorker
         logger.info(f"Setting next track on {self.upnp_device.friendly_name}")
         message = {
             'type': 'internal.set_next_track',
@@ -138,8 +141,7 @@ class DlnaDevice:
                                 for state_variable in state_variables]
         }
         message = {
-            'type': 'internal.upnp_event',
             'message': data,
             'device': {'device_udh': self.upnp_device.udn, 'device_url': self.upnp_device.device_url}
         }
-        await PlayerTaskWorker().send_message(message)
+        await UpnpListener().send_message(message)

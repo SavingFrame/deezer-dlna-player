@@ -3,7 +3,6 @@ from uuid import UUID
 
 import aio_pika
 
-from config import settings
 from utils.rabbitmq import channel_pool
 from ws.ws_manager import ConnectionManager, connection_manager
 
@@ -11,7 +10,7 @@ from ws.ws_manager import ConnectionManager, connection_manager
 class RabbitMQService:
     def __init__(self, connection_manager_: ConnectionManager):
         self.connection_manager = connection_manager_
-        self.exchange_name = "websocket_exchange"  # Custom exchange name
+        self.exchange_name = "deezer_dlna_player"  # Custom exchange name
 
     async def _publish_message(self, message: str, headers: dict = None):
         async with channel_pool.acquire() as channel:
@@ -36,7 +35,7 @@ class RabbitMQService:
     async def consume_messages(self):
         async with channel_pool.acquire() as channel:
             # Declaring a temporary queue
-            queue = await channel.declare_queue('websockets', durable=True)
+            queue = await channel.declare_queue('websockets_old', durable=False)
             exchange = await channel.declare_exchange(
                 self.exchange_name, aio_pika.ExchangeType.DIRECT
             )
@@ -45,9 +44,12 @@ class RabbitMQService:
 
             # Start consuming messages
             async for message in queue:
-                await self.on_message(message)
+                if message.routing_key == 'websockets':
+                    await self.on_ws_message(message)
+                elif message.routing_key == 'deezer_dlna_player':
+                    await self.on_upnp_message(message)
 
-    async def on_message(self, message: aio_pika.IncomingMessage):
+    async def on_ws_message(self, message: aio_pika.IncomingMessage):
         headers = message.headers
         receivers = headers.get('receivers', 'all')
         if receivers == 'all':
@@ -55,6 +57,9 @@ class RabbitMQService:
         else:
             await self.connection_manager.send_to(message.body.decode(), receivers)
         await message.ack()
+
+    async def on_upnp_message(self, message: aio_pika.IncomingMessage):
+        pass
 
 
 # FastAPI application setup remains the same...

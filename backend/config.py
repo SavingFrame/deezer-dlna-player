@@ -1,5 +1,6 @@
 import os
 
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,3 +18,34 @@ class Settings(BaseSettings):
 settings = Settings()
 
 
+class LogConfig(BaseModel):
+    """Logging configuration to be set for the server"""
+
+    version: int = 1
+    disable_existing_loggers: bool = False
+    level: str = "DEBUG"
+    formatters: dict = {
+        "default": {
+            "()": "uvicorn.logging.DefaultFormatter",
+            "fmt": "%(levelprefix)s %(asctime)s %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+
+        },
+    }
+    handlers: dict = {
+        "default": {
+            "level": "DEBUG",
+            "formatter": "default",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stderr",
+        },
+    }
+    loggers: dict = {
+        "aio_pika": {"handlers": ["default"], "level": "INFO"},
+        "aiormq": {"handlers": ["default"], "level": "INFO"},
+        "async_upnp_client": {"handlers": ["default"], "level": "INFO"},
+        "websockets": {"handlers": ["default"], "level": "DEBUG"},
+    }
+
+
+log_config = LogConfig()

@@ -1,25 +1,26 @@
+# ruff: noqa: SIM401, E501, SIM118
 import asyncio
 import json
 
-from deezer import Deezer, GW, API
+from deezer import API, GW, Deezer
 from deezer.errors import (
-    GWAPIError,
-    ItemsLimitExceededException,
-    PermissionException,
-    InvalidTokenException,
-    WrongParameterException,
-    InvalidQueryException,
-    DataException,
-    IndividualAccountChangedNotAllowedException,
     APIError,
-    MissingParameterException,
+    DataException,
     DeezerError,
-    WrongLicense,
+    GWAPIError,
+    IndividualAccountChangedNotAllowedException,
+    InvalidQueryException,
+    InvalidTokenException,
+    ItemsLimitExceededException,
+    MissingParameterException,
+    PermissionException,
     WrongGeolocation,
+    WrongLicense,
+    WrongParameterException,
 )
 from deezer.gw import EMPTY_TRACK_OBJ
 from deezer.utils import map_user_track
-from httpx import AsyncClient, Cookies, ConnectError, TimeoutException, HTTPError
+from httpx import AsyncClient, ConnectError, Cookies, HTTPError, TimeoutException
 
 
 class AsyncDeezerGW(GW):
@@ -326,9 +327,9 @@ class AsyncDeezer(Deezer):
                             "picture": child.get("USER_PICTURE", ""),
                             "license_token": user_data["USER"]["OPTIONS"]["license_token"],
                             "can_stream_hq": user_data["USER"]["OPTIONS"]["web_hq"]
-                                             or user_data["USER"]["OPTIONS"]["mobile_hq"],
+                            or user_data["USER"]["OPTIONS"]["mobile_hq"],
                             "can_stream_lossless": user_data["USER"]["OPTIONS"]["web_lossless"]
-                                                   or user_data["USER"]["OPTIONS"]["mobile_lossless"],
+                            or user_data["USER"]["OPTIONS"]["mobile_lossless"],
                             "country": user_data["USER"]["OPTIONS"]["license_country"],
                             "language": user_data["USER"]["SETTING"]["global"].get("language", ""),
                             "loved_tracks": child.get("LOVEDTRACKS_ID"),
@@ -342,9 +343,9 @@ class AsyncDeezer(Deezer):
                     "picture": user_data["USER"].get("USER_PICTURE", ""),
                     "license_token": user_data["USER"]["OPTIONS"]["license_token"],
                     "can_stream_hq": user_data["USER"]["OPTIONS"]["web_hq"]
-                                     or user_data["USER"]["OPTIONS"]["mobile_hq"],
+                    or user_data["USER"]["OPTIONS"]["mobile_hq"],
                     "can_stream_lossless": user_data["USER"]["OPTIONS"]["web_lossless"]
-                                           or user_data["USER"]["OPTIONS"]["mobile_lossless"],
+                    or user_data["USER"]["OPTIONS"]["mobile_lossless"],
                     "country": user_data["USER"]["OPTIONS"]["license_country"],
                     "language": user_data["USER"]["SETTING"]["global"].get("language", ""),
                     "loved_tracks": user_data["USER"].get("LOVEDTRACKS_ID"),

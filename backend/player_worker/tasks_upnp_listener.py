@@ -1,6 +1,6 @@
-from player_worker.utils import get_dlna_device
 from typing import TYPE_CHECKING
 
+from player_worker.utils import get_dlna_device
 from utils.task_worker.task_registry import task
 
 if TYPE_CHECKING:

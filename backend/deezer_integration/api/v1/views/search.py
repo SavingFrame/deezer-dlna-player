@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from deezer_integration.services.deezer import deezer_integration
 from deezer_integration.api.v1.schemas import search as schemas
+from deezer_integration.services.deezer import deezer_integration
 
 router = APIRouter(prefix="/search")
 

@@ -3,12 +3,12 @@ import hashlib
 import html.parser
 import logging
 import os
-from typing import Dict, Any
+from typing import Any, Dict
 
+import deezer
 from Crypto.Cipher import AES
 from fastapi import HTTPException
 
-import deezer
 from config import settings
 from deezer_integration.services.async_deezer_client import AsyncDeezer
 from deezer_integration.services.stream import DownloadStream
@@ -107,7 +107,7 @@ class DeezerDownloader:
                 "The requested quality is not available with your subscription. "
                 "Deezer HiFi is required for quality 2. Otherwise, the maximum "
                 "quality allowed is 1.",
-            )
+            ) from None
 
         if url is None:
             url = await self._get_encrypted_file_url(

@@ -3,8 +3,8 @@ import logging
 from async_upnp_client.aiohttp import AiohttpRequester
 from async_upnp_client.client import UpnpDevice
 from async_upnp_client.client_factory import UpnpFactory
-from async_upnp_client.exceptions import UpnpConnectionTimeoutError, UpnpConnectionError
-from async_upnp_client.ssdp_listener import SsdpListener, SsdpDevice
+from async_upnp_client.exceptions import UpnpConnectionError, UpnpConnectionTimeoutError
+from async_upnp_client.ssdp_listener import SsdpDevice, SsdpListener
 
 from dlna.schemas import UpnpDeviceSchema
 from dlna.services.dlna_device import DlnaDevice
@@ -31,7 +31,7 @@ class UpnpDeviceDiscoveryManager:
         return device
 
     async def callback(self, ssdp_device: SsdpDevice, device_or_service_type: str, *args, **kwargs):
-        if not device_or_service_type == "urn:schemas-upnp-org:device:MediaRenderer:1":
+        if device_or_service_type != "urn:schemas-upnp-org:device:MediaRenderer:1":
             return
         logger.info(f"Device founded {ssdp_device.udn} {ssdp_device.location}")
         device = await self._create_device(ssdp_device.location)

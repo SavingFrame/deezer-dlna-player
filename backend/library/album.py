@@ -1,6 +1,6 @@
 import dataclasses
 from datetime import date
-from typing import List, TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from config import settings
 from deezer_integration.services.async_deezer_client import AsyncDeezer
@@ -8,8 +8,8 @@ from deezer_integration.services.deezer import deezer_integration
 from library.artist import Artist
 
 if TYPE_CHECKING:
-    from library.track import Track
     from dlna.services.dlna_device import DlnaDevice
+    from library.track import Track
 
 
 @dataclasses.dataclass

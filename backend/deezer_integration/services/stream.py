@@ -62,10 +62,10 @@ class DownloadStream:
                     # Usually happens with deezloader downloads
                     raise NonStreamable(f"{info['error']} - {info['message']}")
                 except KeyError:
-                    raise NonStreamable(info)
+                    raise NonStreamable(info) from None
 
             except json.JSONDecodeError:
-                raise NonStreamable("File not found.")
+                raise NonStreamable("File not found.") from None
 
     def __iter__(self) -> Iterable:
         """Iterate through chunks of the stream.
@@ -112,7 +112,8 @@ class DownloadStream:
         md5_hash = hashlib.md5(track_id.encode()).hexdigest()
         # good luck :)
         return "".join(
-            chr(functools.reduce(lambda x, y: x ^ y, map(ord, t))) for t in zip(md5_hash[:16], md5_hash[16:], SECRET)
+            chr(functools.reduce(lambda x, y: x ^ y, map(ord, t)))
+            for t in zip(md5_hash[:16], md5_hash[16:], SECRET)  # noqa: B905
         ).encode()
 
     @staticmethod

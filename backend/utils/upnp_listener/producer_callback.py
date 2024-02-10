@@ -3,7 +3,7 @@ import json
 import logging
 
 import aio_pika
-from aio_pika import IncomingMessage, DeliveryMode
+from aio_pika import DeliveryMode, IncomingMessage
 
 from utils.rabbitmq import channel_pool
 

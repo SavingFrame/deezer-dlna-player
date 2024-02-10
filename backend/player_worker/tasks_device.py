@@ -1,7 +1,7 @@
 from dlna.services.dlna_device import DlnaDevice
+from dlna.services.dlna_discovery import upnp_devices_discovery
 from player_worker.utils import get_dlna_device
 from utils.task_worker.task_registry import task
-from dlna.services.dlna_discovery import upnp_devices_discovery
 
 
 @task(queue_key="device.set_volume")

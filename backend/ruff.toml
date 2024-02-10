@@ -12,8 +12,6 @@ extend-select = [
     "B",
     # flake8-simplify
     "SIM",
-    # isort
-    "I",
 ]
 
 [format]

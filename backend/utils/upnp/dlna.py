@@ -1,10 +1,10 @@
 import logging
 from mimetypes import guess_type
-from typing import Optional, Mapping, Any
+from typing import Any, Mapping, Optional
 
 from async_upnp_client.const import MIME_TO_UPNP_CLASS_MAPPING
 from async_upnp_client.exceptions import UpnpError
-from async_upnp_client.profiles.dlna import DmrDevice, _LOGGER, dlna_handle_notify_last_change
+from async_upnp_client.profiles.dlna import _LOGGER, DmrDevice, dlna_handle_notify_last_change
 from async_upnp_client.utils import absolute_url
 from didl_lite import didl_lite
 

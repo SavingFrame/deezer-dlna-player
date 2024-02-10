@@ -36,6 +36,8 @@ class UpnpDeviceDiscoveryManager:
             return
         logger.info(f"Device founded {ssdp_device.udn} {ssdp_device.location}")
         device = await self._create_device(ssdp_device.location)
+        if not device:
+            return
         await self.send_to_listener(ssdp_device.udn, ssdp_device.location)
         await self.setup_listener(device)
         await self.send_devices_to_websockets()

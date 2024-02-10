@@ -8,11 +8,9 @@ from starlette.middleware.cors import CORSMiddleware
 import config
 from deezer_integration.api.v1.routes import router as deezer_router
 from utils.broadcaster import Broadcast
-from utils.upnp_listener.consumer import UpnpListenerConsumer
 from ws.views import router as ws_router
 
 broadcast = Broadcast()
-upnp_listener_consumer = UpnpListenerConsumer()
 
 
 @asynccontextmanager

@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import uuid
+from datetime import datetime
+from typing import Optional
 
 from async_upnp_client.aiohttp import AiohttpNotifyServer
 from async_upnp_client.client import UpnpDevice, UpnpStateVariable
@@ -21,9 +23,15 @@ class DlnaDevice:
     def __init__(self, upnp_device: UpnpDevice, subscribe=True):
         self.upnp_device = upnp_device
         self.dmr_device = self.create_dmr_service(upnp_device, subscribe=subscribe)
+        self._ws_cache = {}
+        self._cached_player_queue: tuple[Optional[TracksQueue], Optional[datetime]] = (None, None)
 
     async def get_player_queue(self) -> TracksQueue:
-        return await TracksQueue.load_from_redis(device=self) or TracksQueue(device=self)
+        if self._cached_player_queue[1] and (datetime.now() - self._cached_player_queue[1]).seconds < 60:
+            return self._cached_player_queue[0]
+        player_queue = await TracksQueue.load_from_redis(device=self) or TracksQueue(device=self)
+        self._cached_player_queue = (player_queue, datetime.now())
+        return player_queue
 
     async def _set_next_track(self):
         from utils.task_worker.task_worker import PlayerTaskWorker
@@ -40,10 +48,17 @@ class DlnaDevice:
 
     async def notify_subscribers(self):
         subscribers: set[str] = await async_redis.smembers(f'subscribers:{self.upnp_device.udn}')
+        send_to = []
         if not subscribers:
             return
         message = self.player_info()
-        await send_message_to_specific_clients(type='player', message=message, websockets_uuid=subscribers)
+        for ws_uuid in subscribers:
+            cached_message = self._ws_cache.get(ws_uuid)
+            if cached_message == message:
+                continue
+            self._ws_cache[ws_uuid] = message
+            send_to.append(ws_uuid)
+        await send_message_to_specific_clients(type='player', message=message, websockets_uuid=send_to)
 
     async def subscribe(self, ws_uuid: str):
         await async_redis.sadd(f'subscribers:{self.upnp_device.udn}', ws_uuid)
@@ -122,8 +137,9 @@ class DlnaDevice:
         }
         await send_message_upnp_listener(message)
 
-    def _on_queue_event(self, service, state_variables):
-        asyncio.create_task(self.on_queue_event(service, state_variables))
+    async def _on_queue_event(self, service, state_variables):
+    #     asyncio.create_task(self.on_queue_event(service, state_variables))
+        await self.on_queue_event(service, state_variables)
 
     async def on_queue_event(self, service, state_variables):
         await self.notify_subscribers()

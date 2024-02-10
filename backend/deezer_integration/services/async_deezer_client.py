@@ -28,7 +28,7 @@ class AsyncDeezerGW(GW):
     async def api_call(self, method, args=None, params=None) -> dict | list:
         if args is None: args = {}
         if params is None: params = {}
-        if not self.api_token and method != 'deezer.getUserData': self.api_token = self._get_token()
+        if not self.api_token and method != 'deezer.getUserData': self.api_token = await self._get_token()
         p = {
             'api_version': "1.0",
             'api_token': 'null' if method == 'deezer.getUserData' else self.api_token,
@@ -47,7 +47,7 @@ class AsyncDeezerGW(GW):
             result_json = result.json()
         except (ConnectError, TimeoutException):
             await asyncio.sleep(2)
-            return self.api_call(method, args, params)
+            return await self.api_call(method, args, params)
         if len(result_json['error']):
             if (
                 result_json['error'] == {"GATEWAY_ERROR": "invalid api token"} or
@@ -125,6 +125,12 @@ class AsyncDeezerAPI(API):
         args = self._generate_search_args(query, strict, order, index, limit)
         return await self.api_call('search/album', args)
 
+    async def get_album_tracks(self, album_id, index=0, limit=-1):
+        return await self.api_call(f'album/{str(album_id)}/tracks', {'index': index, 'limit': limit})
+
+    async def get_track(self, song_id):
+        return await self.api_call(f'track/{str(song_id)}')
+
     async def search_artist(self, query, strict=False, order=None, index=0, limit=25):
         args = self._generate_search_args(query, strict, order, index, limit)
         return await self.api_call('search/artist', args)
@@ -152,6 +158,9 @@ class AsyncDeezerAPI(API):
 
     async def get_playlist(self, playlist_id):
         return await self.api_call(f'playlist/{str(playlist_id)}')
+
+    async def get_album_by_UPC(self, upc):
+        return await self.get_album(f'upc:{upc}')
 
     async def api_call(self, method, args=None):
         if args is None:

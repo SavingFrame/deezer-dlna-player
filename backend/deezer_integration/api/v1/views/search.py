@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from deezer_integration.services.deezer import DeezerIntegration
+from deezer_integration.services.deezer import deezer_integration
 from deezer_integration.api.v1.schemas import search as schemas
 
 router = APIRouter(prefix="/search")
@@ -11,7 +11,7 @@ async def search_tracks(query: str, limit: int = 5, offset=0) -> list[schemas.Tr
     """
     Search tracks.
     """
-    response = await DeezerIntegration().search_tracks(query=query, limit=limit)
+    response = await deezer_integration.search_tracks(query=query, limit=limit)
     return response
 
 
@@ -20,7 +20,7 @@ async def search_albums(query: str, limit: int = 5, offset=0) -> list[schemas.Al
     """
     Search albums.
     """
-    response = await DeezerIntegration().search_albums(query=query, limit=limit)
+    response = await deezer_integration.search_albums(query=query, limit=limit)
     return response
 
 
@@ -29,5 +29,5 @@ async def search_artists(query: str, limit: int = 5, offset=0) -> list[schemas.A
     """
     Search artists.
     """
-    response = await DeezerIntegration().search_artists(query=query, limit=limit)
+    response = await deezer_integration.search_artists(query=query, limit=limit)
     return response

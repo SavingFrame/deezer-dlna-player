@@ -1,5 +1,4 @@
 import logging
-import uuid
 
 import anyio
 from fastapi import APIRouter

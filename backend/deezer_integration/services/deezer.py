@@ -114,3 +114,6 @@ class DeezerIntegration:
         await self.login()
         response = await self.async_client.api.search_artist(query, limit=limit)
         return response.get('data')
+
+
+deezer_integration = DeezerIntegration()

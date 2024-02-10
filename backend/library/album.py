@@ -4,7 +4,7 @@ from typing import List, TYPE_CHECKING, Optional
 
 from config import settings
 from deezer_integration.services.async_deezer_client import AsyncDeezer
-from deezer_integration.services.deezer import DeezerIntegration
+from deezer_integration.services.deezer import deezer_integration
 from library.artist import Artist
 
 if TYPE_CHECKING:
@@ -134,7 +134,7 @@ class Album:
 
     @classmethod
     async def from_deezer_by_id(cls, album_id: str, dlna_device: 'DlnaDevice') -> 'Album':
-        client = DeezerIntegration()
+        client = deezer_integration
         album_info = await client.get_album(int(album_id))
         album = await cls.from_deezer_api_album_info(
             album_info,

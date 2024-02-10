@@ -6,7 +6,8 @@ from logging.config import dictConfig
 from pathlib import Path
 
 import aio_pika
-from aio_pika.abc import AbstractIncomingMessage, DeliveryMode
+from aio_pika.abc import AbstractIncomingMessage
+from pyinstrument import Profiler
 
 import config
 from config import settings
@@ -16,6 +17,7 @@ from utils.upnp_listener.senders import send_message_upnp_producer
 
 logger = logging.getLogger('task_worker')
 logger.setLevel(logging.DEBUG)
+profiler = Profiler()
 
 
 class PlayerTaskWorker:
@@ -27,7 +29,6 @@ class PlayerTaskWorker:
         await self.import_task_modules()
         await self._log_registered_tasks()
         async with channel_pool.acquire() as channel:
-
             # Declaring queue
             queue = await channel.declare_queue(
                 "task_worker", durable=False,
@@ -88,6 +89,7 @@ class PlayerTaskWorker:
 
     async def _on_message(self, message: AbstractIncomingMessage) -> None:
         async with message.process():
+
             logger.debug("Message received: %s,  %s", message.body, message.routing_key)
             data = message.body.decode()
             data_json = json.loads(data)
@@ -101,8 +103,7 @@ class PlayerTaskWorker:
                         device_location=data_json['location']
                     )
                 else:
-                    from player_worker.upnp_listener import player_upnp_event
-                    await player_upnp_event(data_json)
+                    await TASK_REGISTRY['upnp_listener.event'].task_func(data=data_json)
 
 
 if __name__ == "__main__":

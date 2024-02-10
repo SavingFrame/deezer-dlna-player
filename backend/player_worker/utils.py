@@ -15,7 +15,7 @@ cache = {}
 def get_dlna_device(func: Callable):
     @wraps(func)
     async def wrapped(*args, **kwargs):
-        data = args[0]
+        data = kwargs.get('data') or args[0]
         device = data.get("device")
         if not device:
             logger.error("Device not found in message.")

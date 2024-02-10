@@ -183,7 +183,7 @@ class CustomDmrDevice(DmrDevice):
 
         return value
 
-    def _on_queue_event(
+    async def _on_queue_event(
         self, service_id: str, state_variables: list[dict]
     ) -> None:
         """State variable(s) changed, perform callback(s)."""
@@ -204,7 +204,7 @@ class CustomDmrDevice(DmrDevice):
                 if state_variable.name == "AVTransportURIMetaData":
                     self._update_av_transport_uri_metadata(state_variable)
         if self.on_queue_event:
-            self.on_queue_event(service, state_variables_class)
+            await self.on_queue_event(service, state_variables_class)
         logger.debug(
             f"Service {service_id} changed state_variables"
         )

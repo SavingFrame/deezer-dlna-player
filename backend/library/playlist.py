@@ -3,7 +3,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from deezer_integration.services.async_deezer_client import AsyncDeezer
-from deezer_integration.services.deezer import DeezerIntegration
+from deezer_integration.services.deezer import deezer_integration
 from library.track import Track
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ class Playlist:
 
     @classmethod
     async def from_deezer_by_id(cls, playlist_id: int, dlna_device: 'DlnaDevice'):
-        client = DeezerIntegration()
+        client = deezer_integration
         playlist = await client.get_playlist(playlist_id)
         return await cls.from_deezer_api_info(playlist, dlna_device, client.async_client)
 

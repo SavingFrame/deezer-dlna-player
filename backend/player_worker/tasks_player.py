@@ -1,4 +1,4 @@
-from deezer_integration.services.deezer import DeezerIntegration
+from deezer_integration.services.deezer import deezer_integration
 from dlna.services.dlna_device import DlnaDevice
 from library.album import Album
 from library.playlist import Playlist
@@ -43,7 +43,7 @@ async def player_play_artist_top(dlna_device: DlnaDevice, data):
     message = data.get('message')
     artist_id = message.get('artist_id')
     start_from = message.get('start_from')
-    client = DeezerIntegration()
+    client = deezer_integration
     tracks_info = await client.get_artist_top(artist_id)
     tracks = [
         await Track.from_deezer_api_track_info(
@@ -85,7 +85,7 @@ async def player_play_playlist(dlna_device: DlnaDevice, data):
 @task(queue_key='player.play_flow')
 @get_dlna_device
 async def player_play_flow(dlna_device: DlnaDevice, data):
-    client = DeezerIntegration()
+    client = deezer_integration
     tracks_info = await client.get_flow_tracks()
     tracks = [
         await Track.from_deezer_api_track_info(

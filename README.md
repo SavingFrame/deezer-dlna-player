@@ -56,11 +56,13 @@ docker-compose up --build
 This command builds and starts the necessary containers. Initial setup might take some time as Docker downloads the
 images and builds the services.
 
+Certainly! Here's the updated **Usage** section to include the instruction about accessing the web interface:
+
+---
+
 ## Usage
 
-With the containers up and running, Deezer DLNA Player is now ready to stream your Deezer music library to your
-DLNA-compatible devices. Simply navigate to the player's interface on your web browser and enjoy your music streaming
-effortlessly.
+With the containers up and running, Deezer DLNA Player is now ready to stream your Deezer music library to your DLNA-compatible devices. Access the player's web interface by navigating to `http://ip_address:8063` on your web browser, replacing `ip_address` with the IP address of the machine where the player is running. Enjoy seamless music streaming to any DLNA-compatible device within your network.
 
 ## Contributing
 

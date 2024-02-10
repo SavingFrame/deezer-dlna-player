@@ -47,6 +47,7 @@ class LogConfig(BaseModel):
         "upnp_listener": {"handlers": ["default"], "level": "INFO"},
         "upnp.discovery": {"handlers": ["default"], "level": "INFO"},
         "task_worker": {"handlers": ["default"], "level": "INFO"},
+        "dlna_device": {"handlers": ["default"], "level": "INFO"},
     }
 
 

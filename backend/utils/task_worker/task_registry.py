@@ -4,7 +4,6 @@ from functools import wraps
 from typing import Callable
 
 logger = logging.getLogger("task_worker")
-logger.setLevel(logging.DEBUG)
 
 TASK_REGISTRY = {}
 

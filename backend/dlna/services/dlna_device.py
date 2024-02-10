@@ -59,6 +59,8 @@ class DlnaDevice:
                 continue
             self._ws_cache[ws_uuid] = message
             send_to.append(ws_uuid)
+            logger.info(f"Notify subscribers {self.upnp_device.friendly_name}")
+            logger.debug(f"Message: {message}")
         await send_message_to_specific_clients(type="player", message=message, websockets_uuid=send_to)
 
     async def subscribe(self, ws_uuid: str):

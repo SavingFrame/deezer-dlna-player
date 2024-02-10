@@ -4,6 +4,7 @@ from typing import Callable
 
 from async_upnp_client.aiohttp import AiohttpRequester
 from async_upnp_client.client_factory import UpnpFactory
+from async_upnp_client.exceptions import UpnpConnectionTimeoutError
 
 from dlna.services.dlna_device import DlnaDevice
 
@@ -26,7 +27,11 @@ def get_dlna_device(func: Callable):
         existing_device = cache.get(device_udh)
         if existing_device:
             return await func(existing_device, *args, **kwargs)
-        upnp_device = await factory.async_create_device(device.get("device_url"))
+        try:
+            upnp_device = await factory.async_create_device(device.get("device_url"))
+        except UpnpConnectionTimeoutError as error:
+            logger.error(f"Connection error to {device.get('device_url')}")
+            raise ValueError(f"Connection error to {device.get('device_url')}") from error
         dlna_device = DlnaDevice(upnp_device, subscribe=False)
         cache[device_udh] = dlna_device
         return await func(dlna_device, *args, **kwargs)

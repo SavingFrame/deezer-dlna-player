@@ -50,7 +50,10 @@ class Broadcast:
     async def _listener(self) -> None:
         async with channel_pool.acquire() as channel:
             # Declaring a temporary queue
-            queue = await channel.declare_queue("websockets")
+            queue = await channel.declare_queue(
+                "websockets",
+                durable=False,
+            )
             exchange = await channel.declare_exchange("deezer_dlna_player", aio_pika.ExchangeType.DIRECT)
             # Binding the queue to the non-default exchange
             await queue.bind(exchange, routing_key="websockets")

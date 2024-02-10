@@ -43,10 +43,10 @@ class LogConfig(BaseModel):
         "aio_pika": {"handlers": ["default"], "level": "INFO"},
         "aiormq": {"handlers": ["default"], "level": "INFO"},
         "async_upnp_client": {"handlers": ["default"], "level": "INFO"},
-        "websockets": {"handlers": ["default"], "level": "DEBUG"},
+        "websockets": {"handlers": ["default"], "level": "INFO"},
         "upnp_listener": {"handlers": ["default"], "level": "INFO"},
-        "upnp.discovery": {"handlers": ["default"], "level": "DEBUG"},
-        "task_worker": {"handlers": ["default"], "level": "DEBUG"},
+        "upnp.discovery": {"handlers": ["default"], "level": "INFO"},
+        "task_worker": {"handlers": ["default"], "level": "INFO"},
     }
 
 

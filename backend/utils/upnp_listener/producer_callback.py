@@ -61,7 +61,7 @@ class UpnpListenerProducerCallback:
         logger.info("Upnp Listener Producer Callback started")
         async with channel_pool.acquire() as channel:
             # Declaring a temporary queue
-            queue = await channel.declare_queue("upnp_listener")
+            queue = await channel.declare_queue("upnp_listener", durable=False)
             exchange = await channel.declare_exchange("deezer_dlna_player", aio_pika.ExchangeType.DIRECT)
             # Binding the queue to the non-default exchange
             await queue.bind(exchange, routing_key="upnp_producer_callback")

@@ -7,7 +7,6 @@ from pathlib import Path
 
 import aio_pika
 from aio_pika.abc import AbstractIncomingMessage
-from pyinstrument import Profiler
 
 import config
 from config import settings
@@ -17,7 +16,6 @@ from utils.upnp_listener.senders import send_message_upnp_producer
 
 logger = logging.getLogger('task_worker')
 logger.setLevel(logging.DEBUG)
-profiler = Profiler()
 
 
 class PlayerTaskWorker:

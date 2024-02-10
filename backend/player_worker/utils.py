@@ -7,7 +7,7 @@ from async_upnp_client.client_factory import UpnpFactory
 
 from dlna.services.dlna_device import DlnaDevice
 
-logger = logging.getLogger('task_worker')
+logger = logging.getLogger("task_worker")
 
 cache = {}
 
@@ -15,14 +15,14 @@ cache = {}
 def get_dlna_device(func: Callable):
     @wraps(func)
     async def wrapped(*args, **kwargs):
-        data = kwargs.get('data') or args[0]
+        data = kwargs.get("data") or args[0]
         device = data.get("device")
         if not device:
             logger.error("Device not found in message.")
             raise ValueError("Device not found in message.")
         requester = AiohttpRequester()
         factory = UpnpFactory(requester)
-        device_udh = device.get('device_udn')
+        device_udh = device.get("device_udn")
         existing_device = cache.get(device_udh)
         if existing_device:
             return await func(existing_device, *args, **kwargs)

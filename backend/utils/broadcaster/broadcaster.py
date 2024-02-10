@@ -8,7 +8,7 @@ from aio_pika import RobustChannel
 
 from utils.rabbitmq import channel_pool
 
-logger = logging.getLogger('websockets')
+logger = logging.getLogger("websockets")
 
 
 class Event:
@@ -17,11 +17,7 @@ class Event:
         self.message: str = message
 
     def __eq__(self, other: object) -> bool:
-        return (
-            isinstance(other, Event)
-            and self.headers == other.headers
-            and self.message == other.message
-        )
+        return isinstance(other, Event) and self.headers == other.headers and self.message == other.message
 
     def __repr__(self) -> str:
         return f"Event(headers={self.headers!r}, message={self.message!r})"
@@ -32,7 +28,6 @@ class Unsubscribed(Exception):
 
 
 class Broadcast:
-
     def __init__(self):
         self._subscribers: Dict[str, set[asyncio.Queue]] = {}
 
@@ -55,18 +50,16 @@ class Broadcast:
     async def _listener(self) -> None:
         async with channel_pool.acquire() as channel:
             # Declaring a temporary queue
-            queue = await channel.declare_queue('websockets')
-            exchange = await channel.declare_exchange(
-                'deezer_dlna_player', aio_pika.ExchangeType.DIRECT
-            )
+            queue = await channel.declare_queue("websockets")
+            exchange = await channel.declare_exchange("deezer_dlna_player", aio_pika.ExchangeType.DIRECT)
             # Binding the queue to the non-default exchange
-            await queue.bind(exchange, routing_key='websockets')
+            await queue.bind(exchange, routing_key="websockets")
             logger.info("Websockets Broadcast started")
             # Start consuming messages
             async for message in queue:
                 logger.debug("Received message: %s", message.body)
                 event = Event(message.body.decode(), headers=message.headers)
-                for queue in list(self._subscribers.get('websockets', [])):
+                for queue in list(self._subscribers.get("websockets", [])):
                     logger.debug("Sending message to queue: %s", queue)
                     await queue.put(event)
                 await message.ack()
@@ -76,11 +69,12 @@ class Broadcast:
             channel: RobustChannel
 
             exchange = await channel.declare_exchange(
-                'deezer_dlna_player', aio_pika.ExchangeType.DIRECT,
+                "deezer_dlna_player",
+                aio_pika.ExchangeType.DIRECT,
             )
             await exchange.publish(
                 aio_pika.Message(body=message.encode(), headers=headers),
-                routing_key='websockets',  # Empty for fanout type exchange
+                routing_key="websockets",  # Empty for fanout type exchange
             )
 
     @asynccontextmanager

@@ -3,7 +3,7 @@ import logging
 from functools import wraps
 from typing import Callable
 
-logger = logging.getLogger('task_worker')
+logger = logging.getLogger("task_worker")
 logger.setLevel(logging.DEBUG)
 
 TASK_REGISTRY = {}
@@ -19,7 +19,7 @@ class Task:
     def __post_init__(self):
         self.task_module = self.task_func.__module__
         func = self.task_func
-        while hasattr(func, '__wrapped__'):
+        while hasattr(func, "__wrapped__"):
             func = func.__wrapped__
             self.task_module = func.__module__
         self.name = func.__name__
@@ -35,7 +35,6 @@ class Task:
 
 def task(queue_key: str, description: str = None, skip_logging: bool = False):
     def decorator(func: Callable):
-
         @wraps(func)
         async def wrapper(*args, **kwargs):
             try:

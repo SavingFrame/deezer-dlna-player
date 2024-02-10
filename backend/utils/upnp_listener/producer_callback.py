@@ -7,27 +7,25 @@ from aio_pika import IncomingMessage, DeliveryMode
 
 from utils.rabbitmq import channel_pool
 
-logger = logging.getLogger('upnp_listener.producer.callback')
+logger = logging.getLogger("upnp_listener.producer.callback")
 
 
 class UpnpListenerProducerCallback:
-
     def __init__(self):
         self._listener_task: asyncio.Task | None = None
 
     async def on_message(self, message: dict | list, headers: dict):
-        action = message.get('action')
-        if action == 'devices.get':
+        action = message.get("action")
+        if action == "devices.get":
             from dlna.services.dlna_discovery import upnp_devices_discovery
+
             await upnp_devices_discovery.send_all_devices_to_listener()
         else:
             logger.warning(f"Unknown action {action}")
 
     async def send_message(self, message: bytes, headers: dict | None = None):
         async with channel_pool.acquire() as channel:
-            exchange = await channel.declare_exchange(
-                'deezer_dlna_player', aio_pika.ExchangeType.DIRECT
-            )
+            exchange = await channel.declare_exchange("deezer_dlna_player", aio_pika.ExchangeType.DIRECT)
             message = aio_pika.Message(
                 message,
                 headers=headers,
@@ -63,12 +61,10 @@ class UpnpListenerProducerCallback:
         logger.info("Upnp Listener Producer Callback started")
         async with channel_pool.acquire() as channel:
             # Declaring a temporary queue
-            queue = await channel.declare_queue('upnp_listener')
-            exchange = await channel.declare_exchange(
-                'deezer_dlna_player', aio_pika.ExchangeType.DIRECT
-            )
+            queue = await channel.declare_queue("upnp_listener")
+            exchange = await channel.declare_exchange("deezer_dlna_player", aio_pika.ExchangeType.DIRECT)
             # Binding the queue to the non-default exchange
-            await queue.bind(exchange, routing_key='upnp_producer_callback')
+            await queue.bind(exchange, routing_key="upnp_producer_callback")
 
             # Start consuming messages
             message: IncomingMessage

@@ -9,12 +9,13 @@ import config
 from utils.rabbitmq import channel_pool
 from utils.upnp_listener.producer_callback import UpnpListenerProducerCallback
 
-logger = logging.getLogger('upnp_listener.producer')
+logger = logging.getLogger("upnp_listener.producer")
 
 
 class UpnpListener:
     async def on_startup(self):
         from dlna.services.dlna_discovery import upnp_devices_discovery
+
         await upnp_devices_discovery.discover_devices()
 
     async def run_worker(self):
@@ -23,9 +24,7 @@ class UpnpListener:
 
     async def send_message(self, message: bytes, headers: dict | None = None):
         async with channel_pool.acquire() as channel:
-            exchange = await channel.declare_exchange(
-                'deezer_dlna_player', aio_pika.ExchangeType.DIRECT
-            )
+            exchange = await channel.declare_exchange("deezer_dlna_player", aio_pika.ExchangeType.DIRECT)
             message = aio_pika.Message(
                 message,
                 headers=headers,

@@ -3,7 +3,7 @@ from player_worker.utils import get_dlna_device
 from utils.task_worker.task_registry import task
 
 
-@task(queue_key='internal.set_next_track', skip_logging=True)
+@task(queue_key="internal.set_next_track", skip_logging=True)
 @get_dlna_device
 async def player_set_next_track(dlna_device: DlnaDevice, data):
     player_queue = await dlna_device.get_player_queue()

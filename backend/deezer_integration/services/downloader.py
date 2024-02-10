@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class ScriptExtractor(html.parser.HTMLParser):
-    """ extract <script> tag contents from a html page """
+    """extract <script> tag contents from a html page"""
 
     def __init__(self):
         html.parser.HTMLParser.__init__(self)
@@ -37,7 +37,6 @@ class ScriptExtractor(html.parser.HTMLParser):
 
 
 class DeezerDownloader:
-
     def __init__(self, track_id: str, deezer_client: AsyncDeezer | None = None):
         self.client = deezer_client or AsyncDeezer()
         self.track_id = track_id
@@ -59,9 +58,7 @@ class DeezerDownloader:
         self.track_info = response
         return response
 
-    async def _get_encrypted_file_url(
-        self, meta_id: str, track_hash: str, media_version: str
-    ) -> str:
+    async def _get_encrypted_file_url(self, meta_id: str, track_hash: str, media_version: str) -> str:
         format_number = 1
 
         url_bytes = b"\xa4".join(
@@ -87,9 +84,7 @@ class DeezerDownloader:
         return f"https://e-cdns-proxy-{track_hash[0]}.dzcdn.net/mobile/1/{path}"
 
     async def _gen_url_path(self, data):
-        return binascii.hexlify(
-            AES.new("jo6aey6haid2Teih".encode(), AES.MODE_ECB).encrypt(data)
-        ).decode("utf-8")
+        return binascii.hexlify(AES.new("jo6aey6haid2Teih".encode(), AES.MODE_ECB).encrypt(data)).decode("utf-8")
 
     async def get_file_url(self, quality: int = 2) -> tuple[dict, dict]:
         await self.login()
@@ -102,9 +97,7 @@ class DeezerDownloader:
         track_info = await self.get_gw_track_info()
         dl_info["fallback_id"] = track_info.get("FALLBACK", {}).get("SNG_ID")
         _, format_str = quality_map[quality]
-        dl_info["quality_to_size"] = [
-            int(track_info.get(f"FILESIZE_{format}", 0)) for _, format in quality_map
-        ]
+        dl_info["quality_to_size"] = [int(track_info.get(f"FILESIZE_{format}", 0)) for _, format in quality_map]
         token = track_info["TRACK_TOKEN"]
         try:
             url = await self.client.get_track_url(token, format_str)
@@ -113,7 +106,7 @@ class DeezerDownloader:
                 401,
                 "The requested quality is not available with your subscription. "
                 "Deezer HiFi is required for quality 2. Otherwise, the maximum "
-                "quality allowed is 1."
+                "quality allowed is 1.",
             )
 
         if url is None:
@@ -146,7 +139,7 @@ class DeezerDownloader:
         filepath, file_exists = await self._get_path(dl_info, track_info)
         if file_exists:
             return filepath
-        stream = DownloadStream(dl_info["url"], item_id=dl_info.get('id'))
+        stream = DownloadStream(dl_info["url"], item_id=dl_info.get("id"))
         # stream_size = len(stream)
         # stream_quality = dl_info["size_to_quality"][stream_size]
         with open(filepath, "wb") as file:
@@ -162,5 +155,6 @@ class DeezerDownloader:
     #         "MP3_320": 1,
     #         "FLAC": 2,
     #     }.get(filetype)
+
 
 # deezer_downloader = DeezerDownloader()

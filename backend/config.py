@@ -29,7 +29,6 @@ class LogConfig(BaseModel):
             "()": "uvicorn.logging.DefaultFormatter",
             "fmt": "[%(name)s] %(levelprefix)s %(asctime)s %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
-
         },
     }
     handlers: dict = {

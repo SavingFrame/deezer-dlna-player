@@ -4,7 +4,7 @@ import logging
 from utils.upnp_listener.producer import listener
 from utils.upnp_listener.producer_callback import UpnpListenerProducerCallback
 
-logger = logging.getLogger('upnp_listener.producer')
+logger = logging.getLogger("upnp_listener.producer")
 
 
 async def send_message_upnp_listener(message: dict | list, headers: dict | None = None):

@@ -10,7 +10,7 @@ class UpnpDeviceSchema(BaseModel):
     udn: str
     url: str
 
-    model_config = ConfigDict(from_attributes=True, protected_namespaces=('__',))
+    model_config = ConfigDict(from_attributes=True, protected_namespaces=("__",))
 
     @computed_field
     @property

@@ -6,9 +6,7 @@ DEEZER_FORMATS = {
     "MP3_320",
     "FLAC",
 }
-FOLDER_FORMAT = (
-    "{albumartist} - {title} ({year}) [{container}] [{bit_depth}B-{sampling_rate}kHz]"
-)
+FOLDER_FORMAT = "{albumartist} - {title} ({year}) [{container}] [{bit_depth}B-{sampling_rate}kHz]"
 TRACK_FORMAT = "{tracknumber}. {artist} - {title}"
 ALBUM_KEYS = (
     "albumartist",

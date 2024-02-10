@@ -21,5 +21,5 @@ async def album(album_id: int) -> schemas.AlbumDetailSchema:
     Get album by id.
     """
     response = await deezer_integration.get_album(album_id=album_id)
-    response.update({'tracks': response.pop('tracks', {}).get('data', [])})
+    response.update({"tracks": response.pop("tracks", {}).get("data", [])})
     return response

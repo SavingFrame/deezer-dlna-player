@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class DeezerIntegration:
-    API_URL = 'https://api.deezer.com/'
+    API_URL = "https://api.deezer.com/"
 
     def __init__(self):
         self.async_client = AsyncDeezer()
@@ -25,10 +25,9 @@ class DeezerIntegration:
         await self.login()
         limit = limit or 25
         response = await self.async_client.api.get_user_playlists(
-            user_id=self.async_client.current_user.get('id'),
-            limit=limit
+            user_id=self.async_client.current_user.get("id"), limit=limit
         )
-        return response.get('data')
+        return response.get("data")
 
     async def get_playlist(self, playlist_id: int):
         await self.login()
@@ -39,10 +38,9 @@ class DeezerIntegration:
         await self.login()
         limit = limit or 25
         response = await self.async_client.api.get_user_artists(
-            user_id=self.async_client.current_user.get('id'),
-            limit=limit
+            user_id=self.async_client.current_user.get("id"), limit=limit
         )
-        return response.get('data')
+        return response.get("data")
 
     async def get_artist(self, artist_id: int):
         await self.login()
@@ -52,21 +50,20 @@ class DeezerIntegration:
     async def get_artist_albums(self, artist_id: int):
         await self.login()
         response = await self.async_client.api.get_artist_albums(artist_id)
-        return response.get('data')
+        return response.get("data")
 
     async def get_artist_top(self, artist_id: int):
         await self.login()
         response = await self.async_client.api.get_artist_top(artist_id, limit=100)
-        return response.get('data')
+        return response.get("data")
 
     async def get_albums(self, limit: None | int = None):
         await self.login()
         limit = limit or 25
         response = await self.async_client.api.get_user_albums(
-            user_id=self.async_client.current_user.get('id'),
-            limit=limit
+            user_id=self.async_client.current_user.get("id"), limit=limit
         )
-        return response.get('data')
+        return response.get("data")
 
     async def get_album(self, album_id: int):
         await self.login()
@@ -76,19 +73,17 @@ class DeezerIntegration:
     async def get_flow_tracks(self):
         await self.login()
         response = await self.async_client.api.get_user_flow(
-            user_id=self.async_client.current_user.get('id'),
-            limit=100
+            user_id=self.async_client.current_user.get("id"), limit=100
         )
-        return response.get('data')
+        return response.get("data")
 
     async def get_favorite_tracks(self, limit: None | int = None):
         await self.login()
         limit = limit or 25
         response = await self.async_client.api.get_user_tracks(
-            user_id=self.async_client.current_user.get('id'),
-            limit=limit
+            user_id=self.async_client.current_user.get("id"), limit=limit
         )
-        return response.get('data')
+        return response.get("data")
 
     async def search_tracks(self, query: str, limit: int = 5):
         """
@@ -96,7 +91,7 @@ class DeezerIntegration:
         """
         await self.login()
         response = await self.async_client.api.search(query, limit=limit)
-        return response.get('data')
+        return response.get("data")
 
     async def search_albums(self, query: str, limit: int = 5):
         """
@@ -104,7 +99,7 @@ class DeezerIntegration:
         """
         await self.login()
         response = await self.async_client.api.search_album(query, limit=limit)
-        return response.get('data')
+        return response.get("data")
 
     async def search_artists(self, query: str, limit: int = 5):
         """
@@ -112,7 +107,7 @@ class DeezerIntegration:
         """
         await self.login()
         response = await self.async_client.api.search_artist(query, limit=limit)
-        return response.get('data')
+        return response.get("data")
 
 
 deezer_integration = DeezerIntegration()

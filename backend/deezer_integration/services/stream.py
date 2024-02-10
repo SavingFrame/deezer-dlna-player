@@ -14,7 +14,7 @@ class DownloadStream:
 
     Usage:
 
-        >>> stream = DownloadStream('https://google.com', None)
+        >>> stream = DownloadStream("https://google.com", None)
         >>> with open('google.html', 'wb') as file:
         >>>     for chunk in stream:
         >>>         file.write(chunk)
@@ -50,9 +50,7 @@ class DownloadStream:
         if params is None:
             params = {}
 
-        self.request = self.session.get(
-            url, allow_redirects=True, stream=True, params=params
-        )
+        self.request = self.session.get(url, allow_redirects=True, stream=True, params=params)
         self.file_size = int(self.request.headers.get("Content-Length", 0))
 
         if self.file_size < 20000 and not self.url.endswith(".jpg"):
@@ -82,9 +80,7 @@ class DownloadStream:
             CHUNK_SIZE = 2048 * 3
             return (
                 # (decryptor.decrypt(chunk[:2048]) + chunk[2048:])
-                (self._decrypt_chunk(blowfish_key, chunk[:2048]) + chunk[2048:])
-                if len(chunk) >= 2048
-                else chunk
+                (self._decrypt_chunk(blowfish_key, chunk[:2048]) + chunk[2048:]) if len(chunk) >= 2048 else chunk
                 for chunk in self.request.iter_content(CHUNK_SIZE)
             )
 
@@ -116,8 +112,7 @@ class DownloadStream:
         md5_hash = hashlib.md5(track_id.encode()).hexdigest()
         # good luck :)
         return "".join(
-            chr(functools.reduce(lambda x, y: x ^ y, map(ord, t)))
-            for t in zip(md5_hash[:16], md5_hash[16:], SECRET)
+            chr(functools.reduce(lambda x, y: x ^ y, map(ord, t))) for t in zip(md5_hash[:16], md5_hash[16:], SECRET)
         ).encode()
 
     @staticmethod

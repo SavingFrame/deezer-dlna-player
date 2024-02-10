@@ -28,6 +28,7 @@ class ArtistAlbumsSchema(BaseModel):
 
 # Tracks
 
+
 class AlbumTrackSchema(BaseModel):
     id: int
     title: str

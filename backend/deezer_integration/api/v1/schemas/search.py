@@ -23,6 +23,7 @@ class TrackSchema(BaseModel):
 
 # Album search schemas
 
+
 class AlbumSchema(BaseModel):
     id: int
     title: str
@@ -33,6 +34,7 @@ class AlbumSchema(BaseModel):
 
 
 # Artist search schemas
+
 
 class ArtistSchema(BaseModel):
     id: int

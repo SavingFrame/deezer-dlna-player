@@ -11,7 +11,7 @@ from dlna.services.dlna_device import DlnaDevice
 from utils.upnp_listener.senders import send_message_upnp_listener
 from ws.utils import send_message_to_clients, send_message_to_specific_clients
 
-logger = logging.getLogger('upnp.discovery')
+logger = logging.getLogger("upnp.discovery")
 
 
 class UpnpDeviceDiscoveryManager:
@@ -31,7 +31,7 @@ class UpnpDeviceDiscoveryManager:
         return device
 
     async def callback(self, ssdp_device: SsdpDevice, device_or_service_type: str, *args, **kwargs):
-        if not device_or_service_type == 'urn:schemas-upnp-org:device:MediaRenderer:1':
+        if not device_or_service_type == "urn:schemas-upnp-org:device:MediaRenderer:1":
             return
         logger.info(f"Device founded {ssdp_device.udn} {ssdp_device.location}")
         device = await self._create_device(ssdp_device.location)
@@ -48,24 +48,23 @@ class UpnpDeviceDiscoveryManager:
 
     async def send_devices_to_websockets(self, clients: list[str] = None):
         message = [
-            UpnpDeviceSchema.model_validate(device.device_info).model_dump()
-            for device in self.devices.values()
+            UpnpDeviceSchema.model_validate(device.device_info).model_dump() for device in self.devices.values()
         ]
         if clients:
-            await send_message_to_specific_clients(message, 'devices', clients)
+            await send_message_to_specific_clients(message, "devices", clients)
         else:
-            await send_message_to_clients(message, 'devices')
+            await send_message_to_clients(message, "devices")
 
     async def setup_listener(self, upnp_device: UpnpDevice):
         DlnaDevice(upnp_device)
 
     async def send_to_listener(self, udn: str, location: str):
         headers = {
-            'type': 'discovery',
+            "type": "discovery",
         }
         message = {
-            'udn': udn,
-            'location': location,
+            "udn": udn,
+            "location": location,
         }
         await send_message_upnp_listener(message, headers=headers)
 

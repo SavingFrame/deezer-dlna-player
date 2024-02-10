@@ -58,12 +58,7 @@ def clean_format(formatter: str, format_info, restrict: bool = False):
     return formatter.format(**clean_dict)
 
 
-def get_track_filepath(
-    artist_name: str,
-    album_name: str,
-    track_name: str,
-    quality: int = 2
-) -> str:
+def get_track_filepath(artist_name: str, album_name: str, track_name: str, quality: int = 2) -> str:
     folder = settings.MEDIA_PATH
     artist_name = artist_name
     album_name = album_name

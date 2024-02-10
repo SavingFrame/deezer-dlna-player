@@ -28,8 +28,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(deezer_router, prefix='/api/v1', tags=["deezer"])
-app.include_router(ws_router, prefix='/api/v1', tags=["ws"])
+app.include_router(deezer_router, prefix="/api/v1", tags=["deezer"])
+app.include_router(ws_router, prefix="/api/v1", tags=["ws"])
 
 dictConfig(config.log_config)
 # logging.basicConfig(level=logging.DEBUG)

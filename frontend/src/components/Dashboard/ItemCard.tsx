@@ -17,7 +17,13 @@ interface ItemProps {
 
 const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id, type, description2, extra}) => {
     const navigate = useNavigate();
-    const {actionPlayTrack, actionPlayAlbum, playerData, actionPause} = useWebSocketContext();
+    const {
+        actionPlayTrack,
+        actionPlayAlbum,
+        playerData,
+        actionPause,
+        actionPlayArtistTopTracks
+    } = useWebSocketContext();
 
     const navigateToDetail = () => {
         if (type === "track") {
@@ -37,13 +43,19 @@ const ItemCard: React.FC<ItemProps> = ({title, description, imageUrl, id, type, 
         if (checkIfPlaying()) {
             actionPause();
         } else {
-            type === "track" ? actionPlayTrack(id) : actionPlayAlbum(id, null);
+            if (type === "artist") {
+                actionPlayArtistTopTracks(id, null);
+            } else if (type === "track") {
+                actionPlayTrack(id);
+            } else {
+                actionPlayAlbum(id, null);
+            }
         }
     };
 
     return (
         <Grid item xs={12} sm={6} md={4} lg={3} xl={2}>
-            <Card sx={{ width: '100%', m: 'auto', position: 'relative' }} onClick={navigateToDetail}>
+            <Card sx={{width: '100%', m: 'auto', position: 'relative'}} onClick={navigateToDetail}>
                 <CardActionArea>
                     <CardMedia
                         component="img"

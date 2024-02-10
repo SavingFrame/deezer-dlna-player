@@ -22,37 +22,8 @@ services:
     image: nginx:latest
     container_name: 'nginx'
     volumes:
-      - ./docker/default.conf:/etc/nginx/conf.d/default.conf
-      - ./docker/mime.types:/etc/nginx/mime.types
-      - ./media:/data
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+      - ./mime.types:/etc/nginx/mime.types
+      - ../backend/media:/data
     ports:
-      - "8093:80"
-
-  fastapi:
-    build: .
-    container_name: 'fastapi'
-    ports:
-      - "8094:8000"
-    volumes:
-      - .:/code
-    depends_on:
-      - rabbitmq
-      - redis
-    environment:
-      - DEEZER_ARL=""
-      - MEDIA_URL="http://192.168.0.83/media/"
-      - REDIS_URL="redis://redis:6379/0"
-
-  task_worker:
-    build: .
-    container_name: 'task_worker'
-    command: python utils/task_worker/task_worker.py
-    volumes:
-      - .:/code
-    depends_on:
-      - rabbitmq
-      - redis
-    environment:
-      - DEEZER_ARL=""
-      - MEDIA_URL="http://192.168.0.83/media/"
-      - REDIS_URL="redis://redis:6379/0"
+      - "8063:8063"

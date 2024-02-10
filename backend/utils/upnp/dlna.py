@@ -1,3 +1,4 @@
+import logging
 from mimetypes import guess_type
 from typing import Optional, Mapping, Any
 
@@ -9,8 +10,13 @@ from didl_lite import didl_lite
 
 from utils.upnp.didl import CustomResource
 
+logger = logging.getLogger('upnp_listener')
+
 
 class CustomDmrDevice(DmrDevice):
+    def __init__(self, *args, **kwargs):
+        self.on_queue_event = None
+        super().__init__(*args, **kwargs)
 
     async def _get_mimetype_upnp_class_and_dlna_features(
         self, media_url: str,
@@ -177,16 +183,18 @@ class CustomDmrDevice(DmrDevice):
 
         return value
 
-    def on_queue_event(
+    def _on_queue_event(
         self, service_id: str, state_variables: list[dict]
     ) -> None:
         """State variable(s) changed, perform callback(s)."""
         # handle DLNA specific event
         service = self.device.service_id(service_id)
+        state_variables_class = []
         for state_variable_dict in state_variables:
             state_variable_name = state_variable_dict.get('name')
             state_variable_value = state_variable_dict.get('upnp_value')
             state_variable = service.state_variable(state_variable_name)
+            state_variables_class.append(state_variable)
             state_variable.upnp_value = state_variable_value
             if state_variable.name == "LastChange":
                 dlna_handle_notify_last_change(state_variable)
@@ -195,3 +203,8 @@ class CustomDmrDevice(DmrDevice):
                     self._update_current_track_meta_data(state_variable)
                 if state_variable.name == "AVTransportURIMetaData":
                     self._update_av_transport_uri_metadata(state_variable)
+        if self.on_queue_event:
+            self.on_queue_event(service, state_variables_class)
+        logger.debug(
+            f"Service {service_id} changed state_variables"
+        )

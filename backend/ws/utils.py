@@ -1,4 +1,6 @@
-from ws.message_queue import rabbitmq_service
+from typing import Iterable
+
+from utils.broadcaster.utils import send_message_to_websockets
 
 
 async def send_message_to_clients(message: dict | list, type: str):
@@ -8,10 +10,10 @@ async def send_message_to_clients(message: dict | list, type: str):
         'type': type,
         'message': message
     }
-    await rabbitmq_service.broadcast_send(message)
+    await send_message_to_websockets(message)
 
 
-async def send_message_to_specific_clients(message: dict | list, type: str, websockets_uuid: list[str]):
+async def send_message_to_specific_clients(message: dict | list, type: str, websockets_uuid: Iterable[str]):
     if not websockets_uuid:
         return
     if type not in ['player', 'devices']:
@@ -20,4 +22,4 @@ async def send_message_to_specific_clients(message: dict | list, type: str, webs
         'type': type,
         'message': message
     }
-    await rabbitmq_service.send_to_device(message, websockets_uuid)
+    await send_message_to_websockets(message, list(websockets_uuid))

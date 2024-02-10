@@ -40,6 +40,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      upnp_listener:
+        condition: service_started
     environment:
       - DEEZER_ARL=
       - MEDIA_URL=http://192.168.0.83:8063/media/
@@ -57,8 +59,22 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      upnp_listener:
+        condition: service_started
     environment:
       - DEEZER_ARL=
       - MEDIA_URL=http://192.168.0.83:8063/media/
       - REDIS_URL=redis://localhost:6379/0
       - RABBITMQ_URL=amqp://guest:guest@localhost:5672/
+
+  upnp_listener:
+      build: ../backend
+      command: python /code/utils/upnp_listener/producer.py
+      network_mode: host
+      volumes:
+          - ../backend:/code
+      environment:
+        - DEEZER_ARL=
+        - MEDIA_URL=http://192.168.0.83:8063/media/
+        - REDIS_URL=redis://localhost:6379/0
+        - RABBITMQ_URL=amqp://guest:guest@localhost:5672/

@@ -9,9 +9,10 @@ from async_upnp_client.utils import get_local_ip
 
 from dlna.dataclasses import PlaySongInfo
 from library.player_queue import TracksQueue
+from utils.redis import async_redis
 from utils.upnp.dlna import CustomDmrDevice
-from utils.upnp_listener.upnp_listener import UpnpListener
-from utils.broadcaster.utils import send_message_to_specific_clients
+from utils.upnp_listener.senders import send_message_upnp_listener
+from ws.utils import send_message_to_specific_clients
 
 logger = logging.getLogger('dlna_device')
 
@@ -20,23 +21,6 @@ class DlnaDevice:
     def __init__(self, upnp_device: UpnpDevice, subscribe=True):
         self.upnp_device = upnp_device
         self.dmr_device = self.create_dmr_service(upnp_device, subscribe=subscribe)
-
-    def _on_event(self, service, state_variables):
-        asyncio.create_task(self.handle_event(service, state_variables))
-
-    async def handle_event(self, service, state_variables):
-        logger.info(f"Event received {service.service_id} {state_variables}")
-
-        # await self.notify_subscribers()
-        await self._send_event_to_queue(service, state_variables)
-        # player_queue = await self.get_player_queue()
-        # for var in state_variables:
-        #     if var.name == 'AVTransportURI':
-        #         new_track_uri = var.value
-        #         current_track_uri = await player_queue.get_current_track_uri()
-        #         if new_track_uri != current_track_uri:
-        #             await player_queue.update_current_track_uri(new_track_uri)
-        #             await self._set_next_track()
 
     async def get_player_queue(self) -> TracksQueue:
         return await TracksQueue.load_from_redis(device=self) or TracksQueue(device=self)
@@ -54,23 +38,15 @@ class DlnaDevice:
         }
         await PlayerTaskWorker().send_message(message)
 
-    def create_dmr_service(self, upnp_device: UpnpDevice, subscribe=True):
-        if not subscribe:
-            return CustomDmrDevice(self.upnp_device, None)
-        source = (get_local_ip(upnp_device.device_url), 0)
-        server = AiohttpNotifyServer(upnp_device.requester, source=source)
-        dmr_device = CustomDmrDevice(self.upnp_device, server.event_handler)
-        dmr_device.on_event = self._on_event
-        asyncio.create_task(self.start_listener(server, dmr_device))
-        return dmr_device
-
     async def notify_subscribers(self):
-        websockets = getattr(self.upnp_device, 'subscribers', set())
-        ws_uids = [ws.uuid for ws in websockets]
-        if not ws_uids:
+        subscribers: set[str] = await async_redis.smembers(f'subscribers:{self.upnp_device.udn}')
+        if not subscribers:
             return
         message = self.player_info()
-        await send_message_to_specific_clients(type='player', message=message, websockets_uuid=ws_uids)
+        await send_message_to_specific_clients(type='player', message=message, websockets_uuid=subscribers)
+
+    async def subscribe(self, ws_uuid: str):
+        await async_redis.sadd(f'subscribers:{self.upnp_device.udn}', ws_uuid)
 
     async def notify_specific_subscribers(self, websockets_uuid: list[str, uuid.UUID]):
         message = self.player_info()
@@ -144,4 +120,41 @@ class DlnaDevice:
             'message': data,
             'device': {'device_udh': self.upnp_device.udn, 'device_url': self.upnp_device.device_url}
         }
-        await UpnpListener().send_message(message)
+        await send_message_upnp_listener(message)
+
+    def _on_queue_event(self, service, state_variables):
+        asyncio.create_task(self.on_queue_event(service, state_variables))
+
+    async def on_queue_event(self, service, state_variables):
+        await self.notify_subscribers()
+        for var in state_variables:
+            if var.name == 'AVTransportURI':
+                player_queue = await self.get_player_queue()
+                new_track_uri = var.value
+                current_track_uri = await player_queue.get_current_track_uri()
+                if new_track_uri != current_track_uri:
+                    await player_queue.update_current_track_uri(new_track_uri)
+                    await self._set_next_track()
+
+    def create_dmr_service(self, upnp_device: UpnpDevice, subscribe=True, subscribe_to_queue=True):
+
+        if not subscribe:
+            dmr_device = CustomDmrDevice(self.upnp_device, None)
+            dmr_device.on_queue_event = self._on_queue_event if subscribe_to_queue else None
+            return dmr_device
+        source = (get_local_ip(upnp_device.device_url), 0)
+        server = AiohttpNotifyServer(upnp_device.requester, source=source)
+        dmr_device = CustomDmrDevice(self.upnp_device, server.event_handler)
+        dmr_device.on_event = self._on_event
+        dmr_device.on_queue_event = self._on_queue_event if subscribe_to_queue else None
+        asyncio.create_task(self.start_listener(server, dmr_device))
+        return dmr_device
+
+    @staticmethod
+    async def unsubscribe_all(ws_uuid: str):
+        devices = await async_redis.keys('subscribers:*')
+        for device in devices:
+            await async_redis.srem(device, ws_uuid)
+
+    def _on_event(self, service, state_variables):
+        asyncio.create_task(self._send_event_to_queue(service, state_variables))

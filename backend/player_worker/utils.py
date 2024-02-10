@@ -18,11 +18,11 @@ def get_dlna_device(func: Callable):
         data = args[0]
         device = data.get("device")
         if not device:
-            logger.error("Device_udh not found in message.")
-            raise ValueError("Device_udh not found in message.")
+            logger.error("Device not found in message.")
+            raise ValueError("Device not found in message.")
         requester = AiohttpRequester()
         factory = UpnpFactory(requester)
-        device_udh = device.get('device_udh')
+        device_udh = device.get('device_udn')
         existing_device = cache.get(device_udh)
         if existing_device:
             return await func(existing_device, *args, **kwargs)

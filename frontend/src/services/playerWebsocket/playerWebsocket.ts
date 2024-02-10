@@ -24,9 +24,12 @@ const useWebSocket = (): WebSocketValues => {
     // Function to send data through WebSocket
     const sendData = useCallback((data: any) => {
         if (webSocket) {
+            if (!data.device && currentDevice) {
+                data = {...data, device: {device_udn: currentDevice?.udn, device_url: currentDevice?.url}};
+            }
             webSocket.send(JSON.stringify(data));
         }
-    }, [webSocket]);
+    }, [webSocket, currentDevice]);
 
     const actionPlayTrack = useCallback((songId: number) => {
         sendData({type: 'player.play_song', message: songId});
@@ -54,6 +57,10 @@ const useWebSocket = (): WebSocketValues => {
         sendData({type: 'player.next'});
     }, [sendData]);
 
+    const actionGetData = useCallback(() => {
+        sendData({type: 'get_data'});
+    }, [sendData]);
+
     const actionPlayPrevious = useCallback(() => {
         sendData({type: 'player.previous'});
     }, [sendData]);
@@ -64,7 +71,7 @@ const useWebSocket = (): WebSocketValues => {
 
     const actionSetDevice = useCallback((device: DeviceType) => {
         setCurrentDevice(device);
-        sendData({type: 'set_device', device_udh: device.udn});
+        sendData({type: 'device.subscribe', device: {device_udn: device.udn, device_url: device.url}});
     }, [sendData, webSocket]);
 
     const initWebSocket = useCallback(() => {
@@ -78,6 +85,7 @@ const useWebSocket = (): WebSocketValues => {
         ws.onopen = () => {
             setIsConnected(true);
             console.log('WS connected');
+            actionGetData();
         };
 
         ws.onmessage = (event) => {

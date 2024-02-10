@@ -27,7 +27,7 @@ class LogConfig(BaseModel):
     formatters: dict = {
         "default": {
             "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": "%(levelprefix)s %(asctime)s %(message)s",
+            "fmt": "[%(name)s] %(levelprefix)s %(asctime)s %(message)s",
             "datefmt": "%Y-%m-%d %H:%M:%S",
 
         },
@@ -45,6 +45,9 @@ class LogConfig(BaseModel):
         "aiormq": {"handlers": ["default"], "level": "INFO"},
         "async_upnp_client": {"handlers": ["default"], "level": "INFO"},
         "websockets": {"handlers": ["default"], "level": "DEBUG"},
+        "upnp_listener": {"handlers": ["default"], "level": "INFO"},
+        "upnp.discovery": {"handlers": ["default"], "level": "DEBUG"},
+        "task_worker": {"handlers": ["default"], "level": "DEBUG"},
     }
 
 

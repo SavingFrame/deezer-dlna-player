@@ -12,6 +12,7 @@ import config
 from config import settings
 from utils.rabbitmq import channel_pool
 from utils.task_worker.task_registry import TASK_REGISTRY
+from utils.upnp_listener.senders import send_message_upnp_producer
 
 logger = logging.getLogger('task_worker')
 logger.setLevel(logging.DEBUG)
@@ -19,11 +20,13 @@ logger.setLevel(logging.DEBUG)
 
 class PlayerTaskWorker:
 
+    async def on_setup(self):
+        await send_message_upnp_producer({'action': 'devices.get'})
+
     async def run_worker(self):
         await self.import_task_modules()
         await self._log_registered_tasks()
         async with channel_pool.acquire() as channel:
-            await channel.set_qos(prefetch_count=1)
 
             # Declaring queue
             queue = await channel.declare_queue(
@@ -33,12 +36,12 @@ class PlayerTaskWorker:
                 'deezer_dlna_player', aio_pika.ExchangeType.DIRECT
             )
 
-            await queue.bind(exchange, routing_key="task_queue")
-            await queue.bind(exchange, routing_key="upnp_notify")
+            await queue.bind(exchange, routing_key="task_worker")
+            await queue.bind(exchange, routing_key="upnp_listener")
 
             # Start listening the queue with name 'task_queue'
             await queue.consume(self._on_message)
-
+            await self.on_setup()
             print(" [*] Waiting for messages. To exit press CTRL+C")
             await asyncio.Future()
 
@@ -50,15 +53,16 @@ class PlayerTaskWorker:
     async def send_message(self, message: dict | list):
         async with channel_pool.acquire() as channel:
             exchange = await channel.declare_exchange(
-                'task_worker', aio_pika.ExchangeType.DIRECT
+                'deezer_dlna_player', aio_pika.ExchangeType.DIRECT
             )
+            logger.debug("Sending message to task worker: %s", message)
             message = json.dumps(message)
             message = aio_pika.Message(
-                message.encode(), delivery_mode=DeliveryMode.NOT_PERSISTENT,
+                message.encode(),
             )
             await exchange.publish(
                 message,
-                routing_key="task_queue",
+                routing_key="task_worker",
             )
 
     @staticmethod
@@ -84,13 +88,21 @@ class PlayerTaskWorker:
 
     async def _on_message(self, message: AbstractIncomingMessage) -> None:
         async with message.process():
+            logger.debug("Message received: %s,  %s", message.body, message.routing_key)
             data = message.body.decode()
             data_json = json.loads(data)
-            if message.routing_key == 'task_queue':
+            if message.routing_key == 'task_worker':
                 await self.on_message(data_json)
             elif message.routing_key == 'upnp_listener':
-                from player_worker.upnp_listener import player_upnp_event
-                await player_upnp_event(data_json)
+                if message.headers.get('type') == 'discovery':
+                    from dlna.services.dlna_discovery import upnp_devices_discovery
+                    await upnp_devices_discovery.create_device_from_listener(
+                        device_udn=data_json['udn'],
+                        device_location=data_json['location']
+                    )
+                else:
+                    from player_worker.upnp_listener import player_upnp_event
+                    await player_upnp_event(data_json)
 
 
 if __name__ == "__main__":

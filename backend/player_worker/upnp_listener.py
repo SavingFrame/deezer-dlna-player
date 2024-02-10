@@ -5,8 +5,8 @@ if TYPE_CHECKING:
 
 
 @get_dlna_device
-async def player_upnp_event(dlna_device: 'DlnaDevicel', data):
+async def player_upnp_event(dlna_device: 'DlnaDevice', data):
     message = data.get('message')
     service_id = message.get('service_id')
     state_variables = message.get('state_variables')
-    dlna_device.dmr_device.on_queue_event(service_id, state_variables)
+    dlna_device.dmr_device._on_queue_event(service_id, state_variables)

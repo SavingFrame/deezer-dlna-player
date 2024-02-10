@@ -5,6 +5,7 @@ export type DeviceType = {
     model_name: string;
     icon?: string | null;
     udn: string;
+    url: string
 }
 
 export type PlayerType = {

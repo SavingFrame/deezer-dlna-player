@@ -1,10 +1,14 @@
 import asyncio
+import logging
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator, AsyncIterator, Dict, Optional
 
 import aio_pika
+from aio_pika import RobustChannel
 
 from utils.rabbitmq import channel_pool
+
+logger = logging.getLogger('websockets')
 
 
 class Event:
@@ -43,7 +47,6 @@ class Broadcast:
         self._listener_task = asyncio.create_task(self._listener())
 
     async def disconnect(self) -> None:
-        print('disconnect')
         if self._listener_task.done():
             self._listener_task.result()
         else:
@@ -58,19 +61,22 @@ class Broadcast:
             )
             # Binding the queue to the non-default exchange
             await queue.bind(exchange, routing_key='websockets')
-
+            logger.info("Websockets Broadcast started")
             # Start consuming messages
             async for message in queue:
+                logger.debug("Received message: %s", message.body)
                 event = Event(message.body.decode(), headers=message.headers)
-
                 for queue in list(self._subscribers.get('websockets', [])):
+                    logger.debug("Sending message to queue: %s", queue)
                     await queue.put(event)
                 await message.ack()
 
     async def publish(self, message: Any, headers=None) -> None:
         async with channel_pool.acquire() as channel:
+            channel: RobustChannel
+
             exchange = await channel.declare_exchange(
-                'deezer_dlna_player', aio_pika.ExchangeType.DIRECT
+                'deezer_dlna_player', aio_pika.ExchangeType.DIRECT,
             )
             await exchange.publish(
                 aio_pika.Message(body=message.encode(), headers=headers),
@@ -111,6 +117,7 @@ class Subscriber:
         while True:
             try:
                 item = self._queue.get_nowait()
+                logger.debug("Getting item from queue: %s", item)
                 if item is None:
                     raise Unsubscribed()
                 return item

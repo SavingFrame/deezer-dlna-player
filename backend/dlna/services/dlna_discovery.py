@@ -4,7 +4,7 @@ import logging
 from async_upnp_client.aiohttp import AiohttpRequester
 from async_upnp_client.client import UpnpDevice
 from async_upnp_client.client_factory import UpnpFactory
-from async_upnp_client.exceptions import UpnpConnectionTimeoutError
+from async_upnp_client.exceptions import UpnpConnectionTimeoutError, UpnpConnectionError
 from async_upnp_client.ssdp_listener import SsdpListener, SsdpDevice
 
 from dlna.schemas import UpnpDeviceSchema
@@ -24,8 +24,8 @@ class UpnpDeviceDiscoveryManager:
         factory = UpnpFactory(requester)
         try:
             device = await factory.async_create_device(location_url)
-        except UpnpConnectionTimeoutError:
-            logger.warning(f"Device timeout {location_url}")
+        except (UpnpConnectionTimeoutError, UpnpConnectionError) as err:
+            logger.warning(f"Connection error to {location_url}: {str(err)}")
             return
         self.devices[device.udn] = device
         logger.info(f"Device created {device.udn} {device.friendly_name}")

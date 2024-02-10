@@ -1,6 +1,5 @@
 import json
 import logging
-from typing import Iterable
 
 from main import broadcast
 

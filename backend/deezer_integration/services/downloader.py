@@ -3,17 +3,16 @@ import hashlib
 import html.parser
 import logging
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from Crypto.Cipher import AES
 from fastapi import HTTPException
-from pathvalidate import sanitize_filepath
 
 import deezer
 from config import settings
 from deezer_integration.services.async_deezer_client import AsyncDeezer
 from deezer_integration.services.stream import DownloadStream
-from deezer_integration.utils import get_extension, get_track_filepath
+from deezer_integration.utils import get_track_filepath
 
 logger = logging.getLogger(__name__)
 

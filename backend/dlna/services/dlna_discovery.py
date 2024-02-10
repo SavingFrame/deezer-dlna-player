@@ -1,4 +1,3 @@
-import asyncio
 import logging
 
 from async_upnp_client.aiohttp import AiohttpRequester

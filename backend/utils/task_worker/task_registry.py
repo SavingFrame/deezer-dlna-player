@@ -1,6 +1,6 @@
 import dataclasses
 import logging
-from functools import lru_cache, wraps
+from functools import wraps
 from typing import Callable
 
 logger = logging.getLogger('task_worker')

@@ -23,6 +23,8 @@ import PauseIcon from '@mui/icons-material/Pause';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import DlnaIcon from '@mui/icons-material/SettingsRemote';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
+
 import DefaultDeviceIcon from '@mui/icons-material/DeviceHub';
 import {useWebSocketContext} from "../providers/WebSocketProvider";
 import {VolumeDownRounded, VolumeUpRounded} from "@mui/icons-material";
@@ -134,7 +136,8 @@ const FixedPlayer: FC = () => {
         actionPlayNext,
         actionPlayPrevious,
         actionSetDevice,
-        currentDevice
+        currentDevice,
+        actionShuffle
     }: WebSocketValues = useWebSocketContext();
 
 
@@ -166,13 +169,20 @@ const FixedPlayer: FC = () => {
         // Check if media is playing and start an interval
         if (playerData.is_playing) {
             intervalId = setInterval(() => {
-                setMediaPosition(prevPosition => prevPosition + 1);
+                setMediaPosition(prevPosition => {
+                    // Check if the current position has reached the end of the song
+                    if (prevPosition >= playerData.media_duration) {
+                        return 0; // Reset the media position to 0 or to the beginning
+                    }
+                    return prevPosition + 1;
+                });
             }, 1000); // Increment every 1000 milliseconds (1 second)
         }
 
         // Clear interval when media stops playing or on unmount
         return () => clearInterval(intervalId);
-    }, [playerData.is_playing]);
+    }, [playerData.is_playing, playerData.media_duration]);
+
 
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60);
@@ -227,6 +237,14 @@ const FixedPlayer: FC = () => {
                                     >
                                         <SkipNextIcon/>
                                     </IconButton>
+                                    <IconButton
+                                        color={playerData.is_shuffle ? "secondary" : "inherit"}
+                                        disabled={!isConnected}
+                                        onClick={() => actionShuffle()}
+                                    >
+                                        <ShuffleIcon/>
+                                    </IconButton>
+
                                     <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                                         <Typography variant="body2" style={{marginRight: '10px'}}>
                                             {formatTime(mediaPosition)}

@@ -92,10 +92,14 @@ class DlnaDevice:
 
     async def player_info(self):
         player_queue = await self.get_player_queue()
+        media_position = self.dmr_device.media_position
+        media_position_update_at = self.dmr_device.media_position_updated_at
+        date_now = datetime.now(media_position_update_at.tzinfo)
+        media_position = media_position + (date_now - media_position_update_at).seconds
         return {
             "media_title": self.dmr_device.media_title,
             "media_artist": self.dmr_device.media_artist,
-            "media_position": self.dmr_device.media_position,
+            "media_position": media_position,
             "media_duration": self.dmr_device.media_duration,
             "is_playing": self.is_playing,
             "volume_level": self.dmr_device.volume_level,

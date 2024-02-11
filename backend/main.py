@@ -6,6 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 import config
 from deezer_integration.api.v1.routes import router as deezer_router
+from dlna.utils import clear_subscribers
 from utils.broadcaster import Broadcast
 from ws.views import router as ws_router
 
@@ -14,9 +15,11 @@ broadcast = Broadcast()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await clear_subscribers()
     await broadcast.connect()
     yield
     await broadcast.disconnect()
+    await clear_subscribers()
 
 
 app = FastAPI(lifespan=lifespan)

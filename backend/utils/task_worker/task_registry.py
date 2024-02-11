@@ -2,6 +2,7 @@ import dataclasses
 import logging
 from functools import wraps
 from typing import Callable
+from uuid import uuid4
 
 logger = logging.getLogger("task_worker")
 
@@ -36,15 +37,16 @@ def task(queue_key: str, description: str = None, skip_logging: bool = False):
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
+            uuid = uuid4()
             try:
                 if not skip_logging:
-                    logging.info(f"Task {func.__name__} started.")
+                    logger.info(f"[{uuid}]Task {func.__name__} started.")
                 await func(*args, **kwargs)
                 if not skip_logging:
-                    logging.info(f"Task {func.__name__} finished.")
+                    logger.info(f"{uuid}Task {func.__name__} finished.")
 
             except Exception as e:
-                logging.error(f"Task {func.__name__} failed.")
+                logger.error(f"{uuid}Task {func.__name__} failed.")
                 raise e
 
         wrapper._original = func

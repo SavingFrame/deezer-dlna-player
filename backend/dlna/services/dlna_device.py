@@ -59,8 +59,10 @@ class DlnaDevice:
                 continue
             self._ws_cache[ws_uuid] = message
             send_to.append(ws_uuid)
-            logger.info(f"Notify subscribers {self.upnp_device.friendly_name}")
-            logger.debug(f"Message: {message}")
+        if not send_to:
+            return
+        logger.info(f"Notify subscribers {self.upnp_device.friendly_name}")
+        logger.debug(f"Message: {message}, send_to: {send_to}")
         await send_message_to_specific_clients(type="player", message=message, websockets_uuid=send_to)
 
     async def subscribe(self, ws_uuid: str):
@@ -138,7 +140,6 @@ class DlnaDevice:
         await send_message_upnp_listener(message)
 
     async def _on_queue_event(self, service, state_variables):
-        #     asyncio.create_task(self.on_queue_event(service, state_variables))
         await self.on_queue_event(service, state_variables)
 
     async def on_queue_event(self, service, state_variables):

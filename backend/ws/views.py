@@ -40,6 +40,7 @@ async def websocket_endpoint(websocket: WebSocket):
 async def ws_receiver(websocket):
     async for message in websocket.iter_json():
         await WebsocketReceiver(websocket=websocket, message=message).handle()
+    await WebsocketReceiver.on_disconnect(websocket)
 
 
 async def ws_sender(websocket):

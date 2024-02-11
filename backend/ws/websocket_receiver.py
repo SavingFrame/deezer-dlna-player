@@ -24,6 +24,6 @@ class WebsocketReceiver:
 
     @classmethod
     async def on_disconnect(cls, websocket: WebSocket) -> None:
-        message = {"type": "device.unsubscribe", "client_uuid": [websocket.uuid]}
+        message = {"type": "device.unsubscribe", "client_uuid": websocket.uuid}
         await send_message_to_task_worker(message)
         return

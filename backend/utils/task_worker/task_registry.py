@@ -37,16 +37,16 @@ def task(queue_key: str, description: str = None, skip_logging: bool = False):
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            uuid = uuid4()
+            uuid = uuid4().hex
             try:
                 if not skip_logging:
                     logger.info(f"[{uuid}]Task {func.__name__} started.")
                 await func(*args, **kwargs)
                 if not skip_logging:
-                    logger.info(f"{uuid}Task {func.__name__} finished.")
+                    logger.info(f"[{uuid}]Task {func.__name__} finished.")
 
             except Exception as e:
-                logger.error(f"{uuid}Task {func.__name__} failed.")
+                logger.error(f"[{uuid}]Task {func.__name__} failed.")
                 raise e
 
         wrapper._original = func

@@ -41,7 +41,7 @@ class DlnaDevice:
             "type": "internal.set_next_track",
             "message": {"next_track_uri": self.dmr_device.next_transport_uri},
             "device": {
-                "device_udh": self.upnp_device.udn,
+                "device_udn": self.upnp_device.udn,
                 "device_url": self.upnp_device.device_url,
             },
         }
@@ -49,6 +49,7 @@ class DlnaDevice:
 
     async def notify_subscribers(self):
         subscribers: set[str] = await async_redis.smembers(f"subscribers:{self.upnp_device.udn}")
+        print(subscribers)
         send_to = []
         if not subscribers:
             return
@@ -135,7 +136,7 @@ class DlnaDevice:
         }
         message = {
             "message": data,
-            "device": {"device_udh": self.upnp_device.udn, "device_url": self.upnp_device.device_url},
+            "device": {"device_udn": self.upnp_device.udn, "device_url": self.upnp_device.device_url},
         }
         await send_message_upnp_listener(message)
 

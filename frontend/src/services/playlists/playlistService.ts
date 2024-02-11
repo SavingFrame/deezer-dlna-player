@@ -1,5 +1,5 @@
 import {api} from '../api';
-import {PlaylistListData, DetailPlaylistData} from "./types";
+import {PlaylistListData, DetailPlaylistData, GetPlaylistQuery} from "./types";
 
 
 export const playlistApi = api.injectEndpoints({
@@ -11,9 +11,10 @@ export const playlistApi = api.injectEndpoints({
                 params: {limit: limit || 6}
             }),
         }),
-        getPlaylist: builder.query<DetailPlaylistData, number>({
-            query: (id) => ({
+        getPlaylist: builder.query<DetailPlaylistData, GetPlaylistQuery>({
+            query: ({id, tracks_ordering}) => ({
                 url: `/api/v1/integrations/deezer/playlists/${id}`,
+                params: {tracks_ordering: tracks_ordering || 'asc'},
                 method: 'GET',
             }),
         })

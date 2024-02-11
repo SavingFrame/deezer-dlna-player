@@ -1,3 +1,8 @@
+export type GetPlaylistQuery = {
+    id: number;
+    tracks_ordering?: 'asc' | 'desc';
+}
+
 type CreatorPlaylistData = {
     id: number;
     name: string;

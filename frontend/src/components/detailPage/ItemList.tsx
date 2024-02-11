@@ -43,6 +43,7 @@ const ItemList: React.FC<ItemListProps> = ({items, type, albumCoverUrl, onPlay, 
                     <StyledListItem alignItems="center"
                                     sx={{backgroundColor: isPlaying(item) ? 'rgba(0, 0, 0, 0.08)' : 'inherit'}}>
                         {/* Index */}
+
                         <StyledListItemIcon>
                             <Typography variant="body2">{index + 1}.</Typography>
                         </StyledListItemIcon>

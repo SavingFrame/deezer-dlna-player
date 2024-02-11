@@ -17,6 +17,7 @@ export type PlayerType = {
     media_image_url?: string | null;
     volume_level: number;
     is_playing: boolean;
+    is_shuffle: boolean;
 };
 
 export type WebSocketValues = {
@@ -33,6 +34,7 @@ export type WebSocketValues = {
     actionPlayPlaylist: (playlistId: number, startFrom: number | null) => void;
     actionPlayArtistTopTracks: (artistId: number, startFrom: number | null) => void;
     actionPlayFlow: () => void;
+    actionShuffle: () => void;
     actionPlayNext: () => void;
     actionPlayPrevious: () => void;
     reconnect: () => void;

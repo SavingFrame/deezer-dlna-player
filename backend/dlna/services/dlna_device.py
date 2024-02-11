@@ -49,11 +49,10 @@ class DlnaDevice:
 
     async def notify_subscribers(self):
         subscribers: set[str] = await async_redis.smembers(f"subscribers:{self.upnp_device.udn}")
-        print(subscribers)
         send_to = []
         if not subscribers:
             return
-        message = self.player_info()
+        message = await self.player_info()
         for ws_uuid in subscribers:
             cached_message = self._ws_cache.get(ws_uuid)
             if cached_message == message:
@@ -70,7 +69,7 @@ class DlnaDevice:
         await async_redis.sadd(f"subscribers:{self.upnp_device.udn}", ws_uuid)
 
     async def notify_specific_subscribers(self, websockets_uuid: list[str, uuid.UUID]):
-        message = self.player_info()
+        message = await self.player_info()
         websockets_uuid = [str(ws_uuid) for ws_uuid in websockets_uuid]
         await send_message_to_specific_clients(type="player", message=message, websockets_uuid=websockets_uuid)
 
@@ -91,7 +90,8 @@ class DlnaDevice:
         )
         logger.info(f"Setting next song {song_info.media_url} on {self.upnp_device.friendly_name}")
 
-    def player_info(self):
+    async def player_info(self):
+        player_queue = await self.get_player_queue()
         return {
             "media_title": self.dmr_device.media_title,
             "media_artist": self.dmr_device.media_artist,
@@ -101,7 +101,13 @@ class DlnaDevice:
             "volume_level": self.dmr_device.volume_level,
             "media_album": self.dmr_device.media_album_name,
             "media_image_url": self.dmr_device.media_image_url,
+            "is_shuffle": player_queue.is_shuffle,
         }
+
+    async def toggle_shuffle(self):
+        player_queue = await self.get_player_queue()
+        await player_queue.toggle_shuffle()
+        await self.notify_subscribers()
 
     @property
     def is_playing(self):

@@ -15,6 +15,7 @@ const useWebSocket = (): WebSocketValues => {
         media_image_url: null,
         volume_level: 0,
         is_playing: false,
+        is_shuffle: false,
     });
     const [deviceData, setDeviceData] = useState<DeviceType[]>([]);
     const [isConnected, setIsConnected] = useState(false);
@@ -55,6 +56,10 @@ const useWebSocket = (): WebSocketValues => {
     }, [sendData]);
     const actionPlayNext = useCallback(() => {
         sendData({type: 'player.next'});
+    }, [sendData]);
+
+    const actionShuffle = useCallback(() => {
+        sendData({type: 'player.shuffle'});
     }, [sendData]);
 
     const actionGetData = useCallback(() => {
@@ -149,7 +154,8 @@ const useWebSocket = (): WebSocketValues => {
         actionPlayPrevious,
         actionPlayArtistTopTracks,
         actionSetDevice,
-        currentDevice
+        currentDevice,
+        actionShuffle
     };
 };
 

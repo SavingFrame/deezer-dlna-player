@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 from typing import TYPE_CHECKING, Optional
 
 from library.track import Track
@@ -18,7 +19,7 @@ class TracksQueue:
         self.all_tracks = tracks or []
         self.current_track: Optional["Track"] = None
         self.next_track: Optional["Track"] = None
-        self.history = []
+        self.is_shuffle = False
 
     async def set_queue(self, tracks: list["Track"], start_from: int = None):
         self.all_tracks = tracks
@@ -35,15 +36,22 @@ class TracksQueue:
         current_track_uri = await redis.async_redis.get(f"current_track_uri:{self.device.upnp_device.udn}")
         return current_track_uri
 
-    async def set_next_song(self):
+    async def set_next_song(self, skip_shuffle: bool = False):
         if not self.tracks:
             logger.info("No tracks in queue")
             return
-        track = self.tracks[0]
+        if self.is_shuffle and not skip_shuffle:
+            track = random.choice(self.tracks)
+            self.tracks.remove(track)
+        else:
+            track = self.tracks.pop(0)
         play_song_info = await track.generate_play_song_info(download=True)
         self.next_track = track
-        self.history.append(self.tracks.pop(0))
         await self.device.set_next_song(play_song_info)
+        await self.save_to_redis()
+
+    async def toggle_shuffle(self):
+        self.is_shuffle = not self.is_shuffle
         await self.save_to_redis()
 
     async def add_next_song(self, track: "Track"):
@@ -55,7 +63,6 @@ class TracksQueue:
         if not self.tracks:
             return
         track = self.tracks.pop(0)
-        self.history.append(track)
         self.current_track = track
         await track.play()
         # if self.tracks:
@@ -116,8 +123,8 @@ class TracksQueue:
             "tracks": [track.to_dict() for track in self.tracks],
             "current_track": self.current_track.to_dict() if self.current_track else None,
             "next_track": self.next_track.to_dict() if self.next_track else None,
-            "history": [track.to_dict() for track in self.history],
             "all_tracks": [track.to_dict() for track in self.all_tracks],
+            "is_shuffle": self.is_shuffle,
         }
 
     @classmethod
@@ -128,6 +135,6 @@ class TracksQueue:
         queue = cls(device, tracks)
         queue.current_track = current_track
         queue.next_track = next_track
-        queue.history = [Track.from_dict(track_data, dlna_device=device) for track_data in data["history"]]
+        queue.is_shuffle = data.get("is_shuffle", False)
         queue.all_tracks = [Track.from_dict(track_data, dlna_device=device) for track_data in data["all_tracks"]]
         return queue

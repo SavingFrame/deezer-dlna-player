@@ -90,3 +90,9 @@ async def player_play_flow(dlna_device: DlnaDevice, data):
     player_queue = await dlna_device.get_player_queue()
     await player_queue.set_queue(tracks)
     await player_queue.play()
+
+
+@task(queue_key="player.shuffle")
+@get_dlna_device
+async def player_shuffle(dlna_device: DlnaDevice, data):
+    await dlna_device.toggle_shuffle()

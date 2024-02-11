@@ -54,6 +54,23 @@ async def player_play_artist_top(dlna_device: DlnaDevice, data):
     await player_queue.play()
 
 
+@task(queue_key="player.play_favorite_tracks")
+@get_dlna_device
+async def player_play_favorite_tracks(dlna_device: DlnaDevice, data):
+    message = data.get("message")
+    start_from = message.get("start_from")
+    sorting = message.get("sorting", "asc")
+    client = deezer_integration
+    tracks_info = await client.get_favorite_tracks(limit=999, ordering=sorting)
+    tracks = [
+        await Track.from_deezer_api_track_info(track_info, dlna_device=dlna_device, _deezer_client=client.async_client)
+        for track_info in tracks_info
+    ]
+    player_queue = await dlna_device.get_player_queue()
+    await player_queue.set_queue(tracks, start_from=start_from)
+    await player_queue.play()
+
+
 @task(queue_key="player.next")
 @get_dlna_device
 async def player_next(dlna_device: DlnaDevice, data):
@@ -74,7 +91,8 @@ async def player_play_playlist(dlna_device: DlnaDevice, data):
     message = data.get("message")
     playlist_id = message.get("playlist_id")
     start_from = message.get("start_from")
-    playlist = await Playlist.from_deezer_by_id(playlist_id, dlna_device)
+    tracks_ordering = message.get("tracks_ordering", "asc")
+    playlist = await Playlist.from_deezer_by_id(playlist_id, dlna_device, tracks_ordering=tracks_ordering)
     await playlist.play(start_from=start_from)
 
 

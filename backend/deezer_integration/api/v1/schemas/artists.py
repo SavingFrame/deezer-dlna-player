@@ -8,6 +8,8 @@ class ArtistSchema(BaseModel):
     name: str
     link: str
     picture_medium: str
+    nb_album: int
+    nb_fan: int
 
 
 class ArtistDetailSchema(ArtistSchema):

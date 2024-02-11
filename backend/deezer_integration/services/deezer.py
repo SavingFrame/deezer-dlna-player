@@ -1,4 +1,5 @@
 import logging
+from typing import Literal
 
 from fastapi import HTTPException
 
@@ -29,9 +30,13 @@ class DeezerIntegration:
         )
         return response.get("data")
 
-    async def get_playlist(self, playlist_id: int):
+    async def get_playlist(self, playlist_id: int, tracks_ordering: Literal["asc", "desc"] = "asc"):
         await self.login()
         response = await self.async_client.api.get_playlist(playlist_id)
+        tracks = response.get("tracks", {}).get("data", [])
+        if tracks_ordering == "desc":
+            tracks = sorted(tracks, key=lambda x: x.get("time_add"), reverse=True)
+            response["tracks"]["data"] = tracks
         return response
 
     async def get_artists(self, limit: None | int = None):
@@ -77,12 +82,21 @@ class DeezerIntegration:
         )
         return response.get("data")
 
-    async def get_favorite_tracks(self, limit: None | int = None):
+    async def get_favorite_tracks(self, limit: None | int = None, ordering: str = "asc"):
         await self.login()
         limit = limit or 25
-        response = await self.async_client.api.get_user_tracks(
-            user_id=self.async_client.current_user.get("id"), limit=limit
-        )
+        if ordering == "desc":
+            response = await self.async_client.api.get_user_tracks(
+                user_id=self.async_client.current_user.get("id"), limit=999
+            )
+            data = response.get("data")
+            sorted_data = sorted(data, key=lambda x: x.get("time_add"), reverse=True)
+            return sorted_data[:limit]
+        else:
+            response = await self.async_client.api.get_user_tracks(
+                user_id=self.async_client.current_user.get("id"), limit=limit
+            )
+
         return response.get("data")
 
     async def search_tracks(self, query: str, limit: int = 5):

@@ -1,6 +1,6 @@
 import dataclasses
 from datetime import date, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from deezer_integration.services.async_deezer_client import AsyncDeezer
 from deezer_integration.services.deezer import deezer_integration
@@ -59,9 +59,11 @@ class Playlist:
         )
 
     @classmethod
-    async def from_deezer_by_id(cls, playlist_id: int, dlna_device: "DlnaDevice"):
+    async def from_deezer_by_id(
+        cls, playlist_id: int, dlna_device: "DlnaDevice", tracks_ordering: Literal["asc", "desc"] = "asc"
+    ):
         client = deezer_integration
-        playlist = await client.get_playlist(playlist_id)
+        playlist = await client.get_playlist(playlist_id, tracks_ordering=tracks_ordering)
         return await cls.from_deezer_api_info(playlist, dlna_device, client.async_client)
 
     @classmethod

@@ -7,9 +7,9 @@ router = APIRouter(prefix="/tracks")
 
 
 @router.get("/favorites")
-async def favorite_tracks(limit: int | None = None) -> list[TrackSchema]:
+async def favorite_tracks(limit: int | None = None, ordering: str = "asc") -> list[TrackSchema]:
     """
     Get user favorite tracks.
     """
-    response = await deezer_integration.get_favorite_tracks(limit=limit)
+    response = await deezer_integration.get_favorite_tracks(limit=limit, ordering=ordering)
     return response

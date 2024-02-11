@@ -6,9 +6,10 @@ import {WebSocketValues} from "../../services/playerWebsocket/types";
 import {useWebSocketContext} from "../../providers/WebSocketProvider";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import {AlbumType} from "../../services/albums/types";
 
 type ArtistAlbumsProps = {
-    albums: ArtistAlbumData[];
+    albums: ArtistAlbumData[] | AlbumType[];
 };
 
 const AlbumCard: React.FC<ArtistAlbumsProps> = ({albums}) => {
@@ -22,6 +23,13 @@ const AlbumCard: React.FC<ArtistAlbumsProps> = ({albums}) => {
     const checkIfPlaying = (albumName: string) => {
         // Check if the album is currently playing
         return albumName === playerData.media_album;
+    }
+
+    function isArtistAlbumData(album: ArtistAlbumData | AlbumType): album is ArtistAlbumData {
+        return (album as ArtistAlbumData).fans !== undefined;
+    }
+    function isAlbumType(album: ArtistAlbumData | AlbumType): album is AlbumType {
+        return (album as AlbumType).nb_tracks !== undefined;
     }
 
 
@@ -45,12 +53,21 @@ const AlbumCard: React.FC<ArtistAlbumsProps> = ({albums}) => {
                                     <Typography variant="body2" color="text.secondary">
                                         Released: {album.release_date}
                                     </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {album.fans.toLocaleString()} fans
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        {album.fans.toLocaleString()} fans
-                                    </Typography>
+                                    {isArtistAlbumData(album) && (
+                                        <Typography variant="body2" color="text.secondary">
+                                            {album?.fans.toLocaleString()} fans
+                                        </Typography>
+                                    )}
+                                    {isAlbumType(album) && (
+                                        <Typography variant="body2" color="text.secondary">
+                                            {album?.nb_tracks.toLocaleString()} fans
+                                        </Typography>
+                                    )}
+                                    {isAlbumType(album)  && album?.duration && (
+                                        <Typography variant="body2" color="text.secondary">
+                                            Duration: {album?.duration.toLocaleString()}
+                                        </Typography>
+                                    )}
                                 </CardContent>
                             </CardActionArea>
                             {/* Moved the Box with IconButton outside the CardActionArea */}

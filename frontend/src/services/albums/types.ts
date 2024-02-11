@@ -12,7 +12,7 @@ export type AlbumType = {
     cover_medium: string;
     artist: ArtistType;
     nb_tracks: number;
-    duration: number;
+    duration?: number | null;
     release_date: string;
 };
 

@@ -1,3 +1,7 @@
+export type GetFavouriteTracksQuery = {
+    limit?: number;
+    ordering?: 'asc' | 'desc';
+}
 
 export type DeviceType = {
     friendly_name: string;
@@ -31,8 +35,9 @@ export type WebSocketValues = {
     actionPlay: () => void;
     actionPlayTrack: (songId: number) => void;
     actionPlayAlbum: (albumId: number, startFrom: number | null) => void;
-    actionPlayPlaylist: (playlistId: number, startFrom: number | null) => void;
+    actionPlayPlaylist: (playlistId: number, startFrom: number | null, tracks_ordering: 'asc' | 'desc') => void;
     actionPlayArtistTopTracks: (artistId: number, startFrom: number | null) => void;
+    actionPlayFavoriteTracks: (startFrom: number | null, sorting: 'asc' | 'desc') => void;
     actionPlayFlow: () => void;
     actionShuffle: () => void;
     actionPlayNext: () => void;

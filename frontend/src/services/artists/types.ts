@@ -4,6 +4,8 @@ export type ArtistListData = {
     name: string;
     picture_medium: string;
     link: string;
+    nb_fan: number;
+    nb_album: number;
 };
 
 export type DetailedArtistData = {

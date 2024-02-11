@@ -1,82 +1,48 @@
-import React, {useEffect, useState} from 'react';
-import {CircularProgress, Dialog, DialogContent, DialogTitle, Grid, TextField, Typography} from '@mui/material';
+import React from 'react';
+import {Box, Button, CircularProgress, Grid, Stack, Typography} from '@mui/material';
 import {useGetPlaylistsQuery} from "../services/playlists/playlistService";
 import {useGetArtistsQuery} from "../services/artists/artistService";
-import {useGetFavouriteTracksQuery,} from "../services/tracksService";
+import {useGetFavouriteTracksQuery,} from "../services/tracks/tracksService";
 import {useGetAlbumsQuery} from "../services/albums/albumService";
 import ItemCard from "../components/Dashboard/ItemCard";
 import FlowBanner from "../components/Dashboard/FlowBanner";
 import useDocumentTitle from "../services/headerTitle/useHeaderTitle";
-import Search from "../components/Dashboard/Search";
+import Search from "../components/Search";
+import {useNavigate} from "react-router-dom";
+
+interface ShowAllButtonProps {
+    onClick: () => void; // Define the type of the onClick prop
+}
 
 
 const MainPage: React.FC = () => {
     useDocumentTitle('Main Page');
+    const navigate = useNavigate();
     const {data: playlistsData, isLoading: playlistIsLoading} = useGetPlaylistsQuery();
     const {data: artistsData, isLoading: artistsIsLoading} = useGetArtistsQuery();
-    const {data: tracksData, isLoading: tracksIsLoading} = useGetFavouriteTracksQuery();
+    const {data: tracksData, isLoading: tracksIsLoading} = useGetFavouriteTracksQuery({});
     const {data: albumsData, isLoading: albumsIsLoading} = useGetAlbumsQuery();
 
-    const [searchQuery, setSearchQuery] = useState('');
-    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-    const [isSearchDialogOpen, setSearchDialogOpen] = useState(false);
 
-
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            if (searchQuery.trim() !== '') {
-                setDebouncedSearchQuery(searchQuery);
-                setSearchDialogOpen(true);
-            } else {
-                setSearchDialogOpen(false);
-            }
-        }, 3000);
-
-        return () => clearTimeout(handler);
-    }, [searchQuery]);
-
-    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
-    };
-    const handleCloseSearchDialog = () => {
-        setSearchDialogOpen(false);
-    };
-
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === 'Enter') {
-            // Logic to execute on Enter key press
-            if (searchQuery.trim() !== '') {
-                setDebouncedSearchQuery(searchQuery);
-                setSearchDialogOpen(true);
-            }
-        }
-    };
+    const ShowAllButton: React.FC<ShowAllButtonProps> = ({onClick}) => (
+        <Button onClick={onClick} sx={{fontSize: '1.1rem'}}>Show all</Button>
+    );
 
 
     return (
-        <div style={{padding: 16}}>
-            <TextField
-                fullWidth
-                label="Search Music"
-                variant="outlined"
-                style={{marginBottom: 16}}
-                value={searchQuery}
-                onChange={handleSearchChange}
-                onKeyDown={handleKeyDown}
-            />
-
+        <Box sx={{padding: 2}}>
+            <Search/>
             <FlowBanner/>
 
-            <Dialog open={isSearchDialogOpen} onClose={handleCloseSearchDialog} maxWidth="md" fullWidth>
-                <DialogTitle>Search Results</DialogTitle>
-                <DialogContent>
-                    {debouncedSearchQuery && <Search searchQuery={debouncedSearchQuery}/>}
-                </DialogContent>
-            </Dialog>
+
+            <Box sx={{marginBottom: 4, marginTop: 4}}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{marginBottom: 2}}>
+                    <Typography variant="h4" component="h2">Your Last Playlists</Typography>
+                    {playlistsData?.length === 6 && <ShowAllButton onClick={() => { /* Navigate to playlist detail view */
+                    }}/>}
+                </Stack>
 
 
-            <section>
-                <Typography variant="h4" component="h1">Your Last Playlists</Typography>
                 {playlistIsLoading ? (
                     <CircularProgress/>
                 ) : (
@@ -93,10 +59,16 @@ const MainPage: React.FC = () => {
                         ))}
                     </Grid>
                 )}
-            </section>
+            </Box>
 
-            <section>
-                <Typography variant="h4" component="h1">Favorite artists</Typography>
+            <Box sx={{marginBottom: 4}}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{marginBottom: 2}}>
+                    <Typography variant="h4" component="h2">Favorite Artists</Typography>
+                    {artistsData?.length === 6 && <ShowAllButton onClick={() => {
+                        navigate('/artists')
+                    }}/>}
+                </Stack>
+
                 {artistsIsLoading ? (
                     <CircularProgress/>
                 ) : (
@@ -111,10 +83,16 @@ const MainPage: React.FC = () => {
                         ))}
                     </Grid>
                 )}
-            </section>
+            </Box>
 
-            <section>
-                <Typography variant="h4" component="h1">Favorite Tracks</Typography>
+            <Box sx={{marginBottom: 4}}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{marginBottom: 2}}>
+                    <Typography variant="h4" component="h2">Favorite Tracks</Typography>
+                    {tracksData?.length === 6 && <ShowAllButton onClick={() => {
+                        navigate('/favorite-tracks')
+                    }}/>}
+                </Stack>
+
                 {tracksIsLoading ? (
                     <CircularProgress/>
                 ) : (
@@ -131,10 +109,15 @@ const MainPage: React.FC = () => {
                         ))}
                     </Grid>
                 )}
-            </section>
+            </Box>
 
-            <section>
-                <Typography variant="h4" component="h1">Albums</Typography>
+            <Box sx={{marginBottom: 4}}>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{marginBottom: 2}}>
+                    <Typography variant="h4" component="h2">Albums</Typography>
+                    {albumsData?.length === 6 && <ShowAllButton onClick={() => {
+                        navigate('/albums')
+                    }}/>}
+                </Stack>
                 {albumsIsLoading ? (
                     <CircularProgress/>
                 ) : (
@@ -150,9 +133,9 @@ const MainPage: React.FC = () => {
                         ))}
                     </Grid>
                 )}
-            </section>
+            </Box>
 
-        </div>
+        </Box>
     );
 };
 

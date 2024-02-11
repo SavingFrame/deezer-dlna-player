@@ -5,6 +5,9 @@ import Layout from "./components/Layout";
 import AlbumPage from "./pages/AlbumPage";
 import PlaylistPage from "./pages/PlaylistPage";
 import ArtistPage from "./pages/ArtistPage";
+import AlbumsListPage from "./pages/AlbumsListPage";
+import ArtistsListPage from "./pages/ArtistsListPage";
+import TracksListPage from "./pages/TracksListPage";
 
 const AppRoutes: FC = () => {
     // const navigate = useNavigate();
@@ -15,6 +18,22 @@ const AppRoutes: FC = () => {
                 element={
                     <Layout>
                         <MainPage/>
+                    </Layout>
+                }
+            />
+            <Route
+                path={"/favorite-tracks"}
+                element={
+                    <Layout>
+                        <TracksListPage/>
+                    </Layout>
+                }
+            />
+            <Route
+                path={"/albums"}
+                element={
+                    <Layout>
+                        <AlbumsListPage/>
                     </Layout>
                 }
             />
@@ -39,6 +58,14 @@ const AppRoutes: FC = () => {
                 element={
                     <Layout>
                         <ArtistPage/>
+                    </Layout>
+                }
+            />
+            <Route
+                path={"/artists"}
+                element={
+                    <Layout>
+                        <ArtistsListPage/>
                     </Layout>
                 }
             />

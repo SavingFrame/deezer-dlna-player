@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
@@ -19,3 +21,4 @@ class TrackSchema(BaseModel):
     duration: int
     album: AlbumSchema
     artist: ArtistSchema
+    time_add: datetime

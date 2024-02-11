@@ -272,7 +272,7 @@ const FixedPlayer: FC = () => {
                                             value={playerData.volume_level * 100 || 30}
                                             getAriaValueText={(value: number) => String(value)}
                                             valueLabelDisplay="auto"
-                                            step={5}
+                                            step={1}
                                             onChange={debounce(handleSetVolume)}
                                             sx={sliderStyle}
                                         />

@@ -44,8 +44,15 @@ const useWebSocket = (): WebSocketValues => {
         sendData({type: 'player.play_flow'});
     }, [sendData]);
 
-    const actionPlayPlaylist = useCallback((playlistId: number, startFrom: number | null) => {
-        sendData({type: 'player.play_playlist', message: {'playlist_id': playlistId, 'start_from': startFrom}});
+    const actionPlayPlaylist = useCallback((playlistId: number, startFrom: number | null, tracks_ordering: 'asc' | 'desc' = 'asc') => {
+        sendData({
+            type: 'player.play_playlist',
+            message: {'playlist_id': playlistId, 'start_from': startFrom, 'tracks_ordering': tracks_ordering}
+        });
+    }, [sendData]);
+
+    const actionPlayFavoriteTracks = useCallback((startFrom: number | null, sorting: 'asc' | 'desc' = 'asc') => {
+        sendData({type: 'player.play_favorite_tracks', message: {'start_from': startFrom, sorting: sorting}});
     }, [sendData]);
 
     const actionPause = useCallback(() => {
@@ -155,7 +162,8 @@ const useWebSocket = (): WebSocketValues => {
         actionPlayArtistTopTracks,
         actionSetDevice,
         currentDevice,
-        actionShuffle
+        actionShuffle,
+        actionPlayFavoriteTracks
     };
 };
 

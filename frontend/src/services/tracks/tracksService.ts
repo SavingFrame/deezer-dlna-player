@@ -1,32 +1,14 @@
-import {api} from './api';
-
-export type Album = {
-    id: number;
-    title: string;
-    cover_medium: string;
-};
-
-export type ArtistType = {
-    id: number;
-    name: string;
-    picture_medium: string;
-};
-
-export type Track = {
-    id: number;
-    title: string;
-    duration: number;
-    artist: ArtistType;
-    album: Album;
-};
+import {api} from '../api';
+import {Track} from "./types";
+import {GetFavouriteTracksQuery} from "../playerWebsocket/types";
 
 export const tracksApi = api.injectEndpoints({
     endpoints: (builder) => ({
-        getFavouriteTracks: builder.query<Track[], number | void>({
-            query: (limit) => ({
+        getFavouriteTracks: builder.query<Track[], GetFavouriteTracksQuery>({
+            query: ({limit, ordering}) => ({
                 url: '/api/v1/integrations/deezer/tracks/favorites',
                 method: 'GET',
-                params: {limit: limit || 6}
+                params: {limit: limit || 6, ordering: ordering || 'asc'}
             }),
         }),
         playTrack: builder.mutation<void, number>({

@@ -20,7 +20,7 @@ type SearchProps = {
     searchQuery: string;
 };
 
-const Search: React.FC<SearchProps> = ({ searchQuery }) => {
+const SearchResponse: React.FC<SearchProps> = ({ searchQuery }) => {
     const navigate = useNavigate();
     const { data: artistsData, isLoading: artistsIsLoading } = useGetSearchArtistsQuery({query: searchQuery});
     const { data: tracksData, isLoading: tracksIsLoading } = useGetSearchTracksQuery({query: searchQuery});
@@ -74,4 +74,4 @@ const Search: React.FC<SearchProps> = ({ searchQuery }) => {
     );
 };
 
-export default Search;
+export default SearchResponse;

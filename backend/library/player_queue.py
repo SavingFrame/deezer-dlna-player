@@ -3,6 +3,9 @@ import logging
 import random
 from typing import TYPE_CHECKING, Optional
 
+from deezer import DeezerError
+
+from deezer_integration.exceptions import NonStreamable
 from library.track import Track
 from utils import redis
 
@@ -45,13 +48,18 @@ class TracksQueue:
             self.tracks.remove(track)
         else:
             track = self.tracks.pop(0)
-        play_song_info = await track.generate_play_song_info(download=True)
+        try:
+            play_song_info = await track.generate_play_song_info(download=True)
+        except (DeezerError, NonStreamable) as error:
+            logger.error(f"Error while getting song info: {error}")
+            return await self.set_next_song(skip_shuffle=skip_shuffle)
         self.next_track = track
         await self.device.set_next_song(play_song_info)
         await self.save_to_redis()
 
     async def toggle_shuffle(self):
         self.is_shuffle = not self.is_shuffle
+        await self.set_next_song()
         await self.save_to_redis()
 
     async def add_next_song(self, track: "Track"):
